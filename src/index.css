@@ -10,32 +10,32 @@
 @theme {
   --font-sans: 'Plus Jakarta Sans Variable', 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
 
-  --color-surface: #0e1526;
-  --color-surface-2: #0a1020;
-  --color-canvas: #060a14;
+  --color-surface: #101014;
+  --color-surface-2: #0b0b0e;
+  --color-canvas: #050506;
 
-  --color-slate-50: #0a1020;
-  --color-slate-100: #121b2f;
-  --color-slate-200: #1d2840;
-  --color-slate-300: #2a3753;
-  --color-slate-400: #64718d;
-  --color-slate-500: #8b97b1;
-  --color-slate-600: #a8b3c9;
-  --color-slate-700: #c8d0df;
-  --color-slate-800: #e3e8f1;
-  --color-slate-900: #f6f8fc;
+  --color-slate-50: #0b0b0e;
+  --color-slate-100: #16161c;
+  --color-slate-200: #24242c;
+  --color-slate-300: #34343f;
+  --color-slate-400: #6e6e7c;
+  --color-slate-500: #9a9aa8;
+  --color-slate-600: #b6b6c2;
+  --color-slate-700: #d2d2da;
+  --color-slate-800: #ececf1;
+  --color-slate-900: #ffffff;
 
-  /* Accent principal : bleu électrique */
-  --color-indigo-50: #0d1a38;
-  --color-indigo-100: #12244c;
-  --color-indigo-200: #1b3670;
-  --color-indigo-300: #2a4f9a;
-  --color-indigo-400: #5b95ff;
-  --color-indigo-500: #3a7bff;
-  --color-indigo-600: #1f66ff;
-  --color-indigo-700: #8fb6ff;
-  --color-indigo-800: #b9d0ff;
-  --color-indigo-900: #e1ebff;
+  /* Accent principal : violet électrique */
+  --color-indigo-50: #17143a;
+  --color-indigo-100: #1f1a52;
+  --color-indigo-200: #2e2780;
+  --color-indigo-300: #4237b8;
+  --color-indigo-400: #8b80fb;
+  --color-indigo-500: #6d61f8;
+  --color-indigo-600: #5b4cf5;
+  --color-indigo-700: #b4acff;
+  --color-indigo-800: #d0cbff;
+  --color-indigo-900: #ecebff;
 
   --color-emerald-50: #0a231c;
   --color-emerald-100: #0e3127;
@@ -125,8 +125,7 @@
   body {
     @apply text-slate-900;
     background:
-      radial-gradient(1100px 520px at 12% -8%, rgb(31 102 255 / 0.20), transparent 70%),
-      radial-gradient(900px 480px at 95% 0%, rgb(0 178 255 / 0.10), transparent 70%),
+      radial-gradient(1100px 520px at 12% -8%, rgb(91 76 245 / 0.16), transparent 70%),
       var(--color-canvas);
     background-attachment: fixed;
     min-height: 100vh;
@@ -135,7 +134,7 @@
     letter-spacing: -0.015em;
   }
   ::selection {
-    background: rgb(31 102 255 / 0.45);
+    background: rgb(91 76 245 / 0.5);
     color: white;
   }
   button:not(:disabled),
@@ -153,14 +152,22 @@
 }
 
 @layer components {
-  /* Bouton principal : dégradé bleu électrique avec halo. */
+  /* Bouton principal : violet électrique, liseré clair, léger halo. */
   .btn-glow {
-    background-image: linear-gradient(135deg, #1f66ff 0%, #2f8bff 55%, #00b4ff 100%);
-    box-shadow: 0 8px 28px -10px rgb(31 102 255 / 0.85), inset 0 1px 0 rgb(255 255 255 / 0.18);
+    background-image: linear-gradient(180deg, #6f62ff 0%, #5b4cf5 100%);
+    box-shadow: 0 10px 30px -12px rgb(91 76 245 / 0.9), inset 0 1px 0 rgb(255 255 255 / 0.25), inset 0 0 0 1px rgb(255 255 255 / 0.08);
   }
   .btn-glow:hover:not(:disabled) {
-    filter: brightness(1.08);
-    box-shadow: 0 10px 34px -8px rgb(31 102 255 / 0.95), inset 0 1px 0 rgb(255 255 255 / 0.22);
+    background-image: linear-gradient(180deg, #7a6eff 0%, #6153f7 100%);
+    box-shadow: 0 14px 36px -12px rgb(91 76 245 / 1), inset 0 1px 0 rgb(255 255 255 / 0.3), inset 0 0 0 1px rgb(255 255 255 / 0.1);
+  }
+  /* Bouton sombre secondaire (bloc noir). */
+  .btn-dark {
+    background: #111114;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.1);
+  }
+  .btn-dark:hover {
+    background: #1a1a1f;
   }
   /* Carte : surface sombre, liseré lumineux discret en haut. */
   .card-premium {
@@ -169,7 +176,7 @@
   }
   /* Texte en dégradé pour les grands titres. */
   .text-gradient {
-    background-image: linear-gradient(100deg, #ffffff 10%, #9cc2ff 55%, #38bdf8 95%);
+    background-image: linear-gradient(100deg, #ffffff 15%, #c9c3ff 60%, #8b80fb 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -182,6 +189,102 @@
     background-size: 44px 44px;
     mask-image: radial-gradient(ellipse at 50% 0%, black 30%, transparent 75%);
   }
+}
+
+/*
+ * Zone claire (site vitrine) : les variables de couleur sont redéfinies localement,
+ * les classes Tailwind habituelles s'affichent donc en clair à l'intérieur.
+ */
+.theme-light {
+  color-scheme: light;
+  --color-surface: #ffffff;
+  --color-surface-2: #ffffff;
+  --color-canvas: #ffffff;
+  --color-slate-50: #f6f6f8;
+  --color-slate-100: #efeff3;
+  --color-slate-200: #e4e4ea;
+  --color-slate-300: #d0d0d9;
+  --color-slate-400: #9898a6;
+  --color-slate-500: #686876;
+  --color-slate-600: #4e4e5a;
+  --color-slate-700: #36363f;
+  --color-slate-800: #1d1d23;
+  --color-slate-900: #0a0a0c;
+  --color-indigo-50: #f0eeff;
+  --color-indigo-100: #e4e0ff;
+  --color-indigo-200: #cbc4ff;
+  --color-indigo-300: #a99fff;
+  --color-indigo-700: #4637e0;
+  --color-indigo-800: #3a2cc4;
+  --color-emerald-50: #ecfdf5;
+  --color-emerald-100: #d1fae5;
+  --color-emerald-200: #a7f3d0;
+  --color-emerald-700: #047857;
+  --color-rose-50: #fff1f2;
+  --color-rose-100: #ffe4e6;
+  --color-rose-200: #fecdd3;
+  --color-rose-700: #be123c;
+  --color-sky-50: #f0f9ff;
+  --color-sky-100: #e0f2fe;
+  --color-sky-200: #bae6fd;
+  --color-sky-700: #0369a1;
+  --color-violet-50: #f5f3ff;
+  --color-violet-100: #ede9fe;
+  --color-violet-200: #ddd6fe;
+  --color-violet-700: #6d28d9;
+  --color-amber-50: #fffbeb;
+  --color-amber-200: #fde68a;
+  --color-amber-700: #b45309;
+  background: #ffffff;
+  color: var(--color-slate-900);
+}
+.theme-light .card-premium {
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgb(10 10 12 / 0.04), 0 12px 32px -18px rgb(10 10 12 / 0.18);
+}
+.theme-light .text-gradient {
+  background-image: linear-gradient(100deg, #0a0a0c 20%, #5b4cf5 100%);
+}
+.theme-light .bg-grid {
+  background-image:
+    linear-gradient(rgb(10 10 12 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(10 10 12 / 0.05) 1px, transparent 1px);
+}
+/* Bloc noir (accroche) à l'intérieur d'une zone claire : palette sombre rétablie. */
+.theme-dark {
+  color-scheme: dark;
+  --color-surface: #101014;
+  --color-surface-2: #0b0b0e;
+  --color-canvas: #000000;
+  --color-slate-50: #0b0b0e;
+  --color-slate-100: #16161c;
+  --color-slate-200: #24242c;
+  --color-slate-300: #34343f;
+  --color-slate-400: #6e6e7c;
+  --color-slate-500: #9a9aa8;
+  --color-slate-600: #b6b6c2;
+  --color-slate-700: #d2d2da;
+  --color-slate-800: #ececf1;
+  --color-slate-900: #ffffff;
+  --color-indigo-50: #17143a;
+  --color-indigo-100: #1f1a52;
+  --color-indigo-200: #2e2780;
+  --color-indigo-300: #4237b8;
+  --color-indigo-700: #b4acff;
+  --color-indigo-800: #d0cbff;
+  --color-emerald-50: #0a231c;
+  --color-emerald-700: #5ee6a8;
+  --color-rose-50: #2a0f19;
+  --color-rose-700: #ff8fab;
+  --color-sky-50: #0a1f30;
+  --color-sky-700: #7dd3fc;
+  --color-violet-50: #1a1233;
+  --color-violet-700: #c4b5fd;
+  background: #000000;
+  color: #ffffff;
+}
+.theme-dark .text-gradient {
+  background-image: linear-gradient(100deg, #ffffff 15%, #c9c3ff 60%, #8b80fb 100%);
 }
 
 @media (prefers-reduced-motion: reduce) {

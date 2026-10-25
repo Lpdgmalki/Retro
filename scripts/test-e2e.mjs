@@ -129,13 +129,15 @@ try {
 
   step('Vitrine : Bob (invité depuis l’annuaire) tape son e-mail, est accueilli puis arrive directement sur sa rétro')
   await bob.goto(APP)
-  await bob.getByLabel('Votre adresse e-mail professionnelle').fill(`bob.martin.${stamp}`)
+  await bob.getByRole('button', { name: 'Rejoindre ma rétrospective' }).click()
+  const access = bob.getByRole('dialog', { name: 'Identifiez-vous' })
+  await access.getByLabel('Votre adresse e-mail professionnelle').fill(`bob.martin.${stamp}`)
   await bob.getByRole('option', { name: new RegExp(BOB.email.replace(/\./g, '\\.')) }).click()
   await bob.getByText('Bienvenue M. Bob Martin').waitFor(T)
   await bob.locator('p', { hasText: BOB.job }).first().waitFor(T)
   await bob.getByRole('img', { name: 'Bob Martin' }).first().waitFor(T)
   await bob.screenshot({ path: `${SHOTS}/03-vitrine-bienvenue.png`, animations: 'disabled' })
-  await bob.getByRole('button', { name: /Accéder à ma rétrospective/ }).click()
+  await bob.getByRole('dialog').getByRole('button', { name: /Accéder à ma rétrospective/ }).click()
   await bob.getByRole('heading', { name: 'Sprint 12' }).waitFor(T)
   for (const forbidden of [/Nouvelle rétro/, /Présenter/, /Synthèse/]) {
     if (await bob.getByRole('link', { name: forbidden }).count()) throw new Error(`un invité voit « ${forbidden.source} »`)

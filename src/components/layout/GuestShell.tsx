@@ -1,6 +1,7 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { LogOut, ShieldCheck } from 'lucide-react'
-import { Avatar } from '../ui/primitives'
+import { Avatar, cx } from '../ui/primitives'
+import { openAccess } from '../landing/Landing'
 import { Menu } from '../ui/Menu'
 import { useAuth } from '../../context/AuthContext'
 import { useSettings } from '../../context/SettingsContext'
@@ -25,12 +26,12 @@ export function GuestShell() {
   const isHome = useLocation().pathname === '/'
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-surface/85 backdrop-blur print:hidden">
-        <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-3 px-4 sm:px-6 lg:px-8">
+    <div className={cx('flex min-h-screen flex-col', isHome && 'theme-light')}>
+      <header className={cx('sticky top-0 z-30 bg-surface/85 backdrop-blur print:hidden', isHome ? 'border-b border-transparent' : 'border-b border-slate-200/80')}>
+        <div className={cx('mx-auto flex max-w-[1600px] items-center gap-3 px-4 sm:px-6 lg:px-8', isHome ? 'h-20' : 'h-14')}>
           <Link to="/" className="flex items-center gap-2 font-semibold text-slate-900">
             <BrandMark />
-            <span className="text-[15px] tracking-tight">{settings.org_name}</span>
+            <span className={cx('tracking-tight', isHome ? 'text-xl font-extrabold uppercase' : 'text-[15px]')}>{settings.org_name}</span>
           </Link>
           {isHome && (
             <nav className="ml-6 hidden items-center gap-1 md:flex" aria-label="Sections">
@@ -39,7 +40,7 @@ export function GuestShell() {
                 ['#avantages', 'Avantages'],
                 ['#faq', 'FAQ'],
               ].map(([href, label]) => (
-                <a key={href} href={href} className="rounded-full px-3.5 py-1.5 text-sm font-medium text-slate-500 transition hover:bg-white/[0.05] hover:text-slate-900">
+                <a key={href} href={href} className="rounded-lg px-3.5 py-1.5 text-[17px] font-semibold text-slate-500 transition hover:text-slate-900">
                   {label}
                 </a>
               ))}
@@ -47,9 +48,9 @@ export function GuestShell() {
           )}
           <div className="ml-auto flex items-center gap-2">
             {isHome && !member && (
-              <a href="#acces" className="btn-glow hidden h-9 items-center rounded-full px-4.5 text-sm font-semibold text-white sm:inline-flex">
-                Accéder à mon espace
-              </a>
+              <button type="button" onClick={openAccess} className="btn-glow inline-flex h-11 items-center rounded-xl px-5 text-[15px] font-bold text-white">
+                Connexion
+              </button>
             )}
             {isAdmin && (
               <Link to="/admin" className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm font-medium text-indigo-600 hover:bg-indigo-50">

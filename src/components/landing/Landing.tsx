@@ -1,7 +1,6 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import {
   ArrowRight,
-  BellRing,
   ChevronDown,
   EyeOff,
   FileText,
@@ -9,23 +8,22 @@ import {
   MessagesSquare,
   MousePointerClick,
   Radio,
-  ShieldCheck,
-  Sparkles,
   Target,
   ThumbsUp,
   Trophy,
   UserCheck,
-  Zap,
 } from 'lucide-react'
 import { MemberIdentify, WelcomeCard } from '../MemberIdentify'
 import { cx } from '../ui/primitives'
+import { Modal } from '../ui/Modal'
+import { Pillars } from './Pillars'
 import { useAuth } from '../../context/AuthContext'
 import { useSettings } from '../../context/SettingsContext'
 import { CATEGORIES } from '../../lib/constants'
 
-function scrollToAccess() {
-  document.getElementById('acces')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  setTimeout(() => document.querySelector<HTMLInputElement>('#acces input')?.focus(), 500)
+/** Ouvre la fenêtre d'identification (depuis n'importe quel bouton de la page). */
+export function openAccess() {
+  window.dispatchEvent(new Event('retro:open-access'))
 }
 
 function Kicker({ children }: { children: ReactNode }) {
@@ -40,7 +38,7 @@ function SectionHeading({ kicker, title, subtitle }: { kicker: string; title: Re
   return (
     <div className="mx-auto max-w-3xl text-center">
       <Kicker>{kicker}</Kicker>
-      <h2 className="mt-5 text-3xl leading-tight font-extrabold text-slate-900 sm:text-5xl">{title}</h2>
+      <h2 className="mt-5 text-4xl leading-[1.05] font-bold tracking-[-0.04em] text-slate-900 sm:text-6xl">{title}</h2>
       {subtitle && <p className="mt-4 text-lg text-slate-500">{subtitle}</p>}
     </div>
   )
@@ -115,69 +113,79 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 export function Landing({ onContinue }: { onContinue: () => void }) {
   const { member } = useAuth()
   const { settings } = useSettings()
+  // Fenêtre d'identification ; ouverte d'office pour une personne déjà reconnue (message d'accueil).
+  const [accessOpen, setAccessOpen] = useState(Boolean(member))
+  useEffect(() => {
+    if (member) setAccessOpen(true)
+  }, [member])
+  useEffect(() => {
+    const open = () => setAccessOpen(true)
+    window.addEventListener('retro:open-access', open)
+    return () => window.removeEventListener('retro:open-access', open)
+  }, [])
 
   return (
     <div className="relative overflow-hidden">
-      {/* ───────────── Hero ───────────── */}
-      <section className="relative">
-        <div className="bg-grid pointer-events-none absolute inset-0" aria-hidden />
-        <div className="animate-glow pointer-events-none absolute top-[-240px] left-[-140px] h-[560px] w-[760px] rounded-full bg-indigo-600/25 blur-[140px]" aria-hidden />
-        <div
-          className="animate-glow pointer-events-none absolute top-[120px] right-[-200px] h-[480px] w-[640px] rounded-full bg-violet-600/20 blur-[140px]"
-          aria-hidden
-          style={{ animationDelay: '2s' }}
-        />
-
-        <div className="relative mx-auto grid max-w-7xl gap-12 px-4 pt-14 pb-20 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:px-8 lg:pt-24 lg:pb-28">
-          <div className="animate-rise">
-            <Kicker>
-              <Zap className="size-3.5" /> {settings.org_name}
-            </Kicker>
-            <h1 className="mt-6 text-4xl leading-[1.05] font-extrabold text-slate-900 sm:text-6xl lg:text-7xl">
-              <span className="text-gradient">{settings.welcome_title}</span>
-            </h1>
-            <p className="mt-6 max-w-xl text-lg leading-relaxed whitespace-pre-line text-slate-600">{settings.welcome_message}</p>
-            <div className="mt-9 flex flex-wrap gap-3">
-              <button type="button" onClick={scrollToAccess} className="btn-glow inline-flex h-13 items-center gap-2 rounded-full px-7 text-[15px] font-semibold text-white">
-                Rejoindre ma rétrospective <ArrowRight className="size-4" />
-              </button>
-              <a
-                href="#fonctionnement"
-                className="inline-flex h-13 items-center gap-2 rounded-full bg-white/[0.04] px-7 text-[15px] font-semibold text-slate-800 ring-1 ring-slate-300/70 ring-inset hover:bg-white/[0.08]"
-              >
-                Comment ça marche
-              </a>
+      {/* ───────────── Hero : bloc noir arrondi ───────────── */}
+      <section className="px-2 pt-2 sm:px-4 lg:px-5">
+        <div className="theme-dark relative overflow-hidden rounded-[28px] sm:rounded-[40px]">
+          <div className="pointer-events-none absolute right-[-10%] bottom-[-30%] h-[520px] w-[620px] rounded-full bg-indigo-600/20 blur-[140px]" aria-hidden />
+          <div className="relative mx-auto grid max-w-7xl items-center gap-6 px-6 pt-14 pb-14 sm:px-10 lg:grid-cols-[1.15fr_1fr] lg:pt-24 lg:pb-20">
+            <div className="animate-rise">
+              <div className="inline-flex flex-wrap items-center gap-x-4 gap-y-2 rounded-full bg-[#0f0f12] px-4 py-2.5 ring-1 ring-white/10">
+                <span className="flex items-center gap-1.5">
+                  <span className="flex gap-0.5" aria-hidden>
+                    {CATEGORIES.map((c) => (
+                      <span key={c.id} className={cx('flex size-5 items-center justify-center rounded-[4px]', c.dot)}>
+                        <c.icon className="size-3 text-white" />
+                      </span>
+                    ))}
+                  </span>
+                  <span className="ml-1.5 text-sm font-semibold whitespace-nowrap text-white">Rétrospectives d’équipe</span>
+                  <span className="hidden text-slate-400 sm:inline">•</span>
+                  <span className="hidden text-sm font-semibold whitespace-nowrap text-white sm:inline">4 questions</span>
+                </span>
+                <span className="hidden h-5 w-px bg-white/15 sm:block" aria-hidden />
+                <span className="hidden items-center gap-2 text-sm font-semibold whitespace-nowrap text-white sm:flex">
+                  <Radio className="size-4 text-indigo-400" /> en temps réel
+                </span>
+              </div>
+              <h1 className="mt-8 text-5xl leading-[0.98] font-bold tracking-[-0.045em] text-white sm:text-7xl lg:text-[84px]">
+                {settings.welcome_title}
+              </h1>
+              <p className="mt-8 max-w-xl text-lg leading-relaxed whitespace-pre-line text-slate-500 sm:text-xl">{settings.welcome_message}</p>
+              <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={() => setAccessOpen(true)}
+                  className="btn-glow inline-flex h-16 items-center justify-center gap-2 rounded-xl px-10 text-lg font-bold text-white"
+                >
+                  {member ? 'Accéder à ma rétrospective' : 'Rejoindre ma rétrospective'}
+                </button>
+                <a href="#fonctionnement" className="btn-dark inline-flex h-16 items-center justify-center rounded-xl px-10 text-lg font-bold text-white">
+                  Comment ça marche
+                </a>
+              </div>
             </div>
-            <div className="mt-10 flex flex-wrap gap-x-7 gap-y-3 text-sm text-slate-500">
-              <span className="inline-flex items-center gap-2">
-                <ShieldCheck className="size-4 text-emerald-500" /> Accès réservé aux invités
-              </span>
-              <span className="inline-flex items-center gap-2">
-                <Sparkles className="size-4 text-indigo-400" /> Collaboration en temps réel
-              </span>
-              <span className="inline-flex items-center gap-2">
-                <BellRing className="size-4 text-amber-500" /> Rapport automatique
-              </span>
-            </div>
-          </div>
-
-          <div id="acces" className={cx('animate-rise relative scroll-mt-24', member && 'order-first lg:order-none')} style={{ animationDelay: '200ms' }}>
-            <div className="absolute -inset-px rounded-[2rem] bg-gradient-to-br from-indigo-500/70 via-violet-500/25 to-transparent" aria-hidden />
-            <div className="card-premium relative rounded-[2rem] p-7 sm:p-10">
-              {member ? (
-                <WelcomeCard member={member} onContinue={onContinue} continueLabel="Accéder à ma rétrospective" />
-              ) : (
-                <>
-                  <p className="text-xs font-semibold tracking-[0.18em] text-indigo-400 uppercase">Espace invité</p>
-                  <h2 className="mt-2 text-2xl font-bold text-slate-900">Identifiez-vous</h2>
-                  <p className="mt-1 mb-6 text-sm text-slate-500">Commencez à saisir votre e-mail, puis choisissez votre adresse.</p>
-                  <MemberIdentify />
-                </>
-              )}
+            <div className="animate-rise relative -mx-6 sm:mx-0" style={{ animationDelay: '200ms' }}>
+              <Pillars className="mx-auto w-full max-w-[560px]" />
             </div>
           </div>
         </div>
       </section>
+
+      <Modal open={accessOpen} onClose={() => setAccessOpen(false)} title={member ? 'Bienvenue' : 'Identifiez-vous'} size="md">
+        <div id="acces" className="py-2">
+          {member ? (
+            <WelcomeCard member={member} onContinue={onContinue} continueLabel="Accéder à ma rétrospective" />
+          ) : (
+            <>
+              <p className="mb-5 text-sm text-slate-500">Commencez à saisir votre e-mail professionnel, puis choisissez votre adresse.</p>
+              <MemberIdentify autoFocus />
+            </>
+          )}
+        </div>
+      </Modal>
 
       {/* ───────────── Chiffres ───────────── */}
       <section className="relative border-y border-slate-200/70 bg-surface/40 backdrop-blur">
@@ -279,14 +287,13 @@ export function Landing({ onContinue }: { onContinue: () => void }) {
 
       {/* ───────────── Appel à l'action ───────────── */}
       <section className="relative mx-auto max-w-7xl px-4 pb-24 sm:px-6 lg:px-8">
-        <div className="relative overflow-hidden rounded-[2.5rem] border border-indigo-300/30 px-6 py-16 text-center sm:px-16">
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/40 via-violet-600/25 to-sky-500/20" aria-hidden />
-          <div className="bg-grid absolute inset-0 opacity-60" aria-hidden />
+        <div className="theme-dark relative overflow-hidden rounded-[28px] px-6 py-16 text-center sm:rounded-[40px] sm:px-16">
+          <div className="absolute -bottom-40 left-1/2 h-80 w-[640px] -translate-x-1/2 rounded-full bg-indigo-600/35 blur-[120px]" aria-hidden />
           <div className="relative">
             <ThumbsUp className="mx-auto size-10 text-indigo-700" />
             <h2 className="mt-5 text-3xl font-extrabold text-slate-900 sm:text-5xl">Votre avis compte.</h2>
             <p className="mx-auto mt-4 max-w-xl text-lg text-slate-600">Rejoignez votre rétrospective en quelques secondes et faites avancer votre équipe.</p>
-            <button type="button" onClick={scrollToAccess} className="btn-glow mt-8 inline-flex h-13 items-center gap-2 rounded-full px-8 text-[15px] font-semibold text-white">
+            <button type="button" onClick={openAccess} className="btn-glow mt-8 inline-flex h-16 items-center gap-2 rounded-xl px-10 text-lg font-bold text-white">
               Accéder à mon espace <ArrowRight className="size-4" />
             </button>
           </div>

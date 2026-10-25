@@ -42,7 +42,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       type={type}
       disabled={disabled || loading}
       className={cx(
-        'inline-flex shrink-0 items-center justify-center rounded-full font-semibold whitespace-nowrap transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas active:scale-[0.98] disabled:cursor-not-allowed disabled:active:scale-100',
+        'inline-flex shrink-0 items-center justify-center rounded-xl font-semibold whitespace-nowrap transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas active:scale-[0.98] disabled:cursor-not-allowed disabled:active:scale-100',
         VARIANTS[variant],
         SIZES[size],
         className,
@@ -251,7 +251,7 @@ export function Avatar({
     <span
       title={name}
       className={cx(
-        'inline-flex shrink-0 items-center justify-center rounded-full font-semibold select-none',
+        'inline-flex shrink-0 items-center justify-center rounded-xl font-semibold select-none',
         sizes[size],
         avatarColor(seed ?? name),
         className,
