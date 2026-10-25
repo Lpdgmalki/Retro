@@ -69,7 +69,7 @@ export function DashboardPage() {
             ['2. Partagez', 'Envoyez le lien : chacun rejoint avec un simple pseudo.'],
             ['3. Décidez', 'Votez, puis convertissez les idées en actions suivies.'],
           ].map(([t, d]) => (
-            <li key={t} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <li key={t} className="rounded-xl border border-slate-200 bg-surface p-4 shadow-sm">
               <p className="text-sm font-semibold text-slate-900">{t}</p>
               <p className="mt-1 text-sm text-slate-500">{d}</p>
             </li>
@@ -132,7 +132,7 @@ export function DashboardPage() {
               <Link
                 key={r.id}
                 to={`/r/${r.id}`}
-                className="group rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-indigo-200 hover:shadow-md"
+                className="group rounded-xl border border-slate-200 bg-surface p-4 shadow-sm transition hover:border-indigo-200 hover:shadow-md"
               >
                 <p className="text-xs text-slate-500">{r.teams?.name}</p>
                 <p className="mt-0.5 font-semibold text-slate-900 group-hover:text-indigo-700">{r.sprint_name}</p>

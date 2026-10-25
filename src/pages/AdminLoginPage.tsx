@@ -88,7 +88,7 @@ export function AdminLoginPage() {
       </Link>
       <Card className="animate-pop-in w-full max-w-sm p-6 sm:p-8">
         <div className="mb-6 flex items-center gap-3">
-          <span className="flex size-10 items-center justify-center rounded-xl bg-slate-900 text-white">
+          <span className="flex size-10 items-center justify-center rounded-xl bg-indigo-600 text-white">
             {mode === 'first' ? <ShieldCheck className="size-5" /> : <KeyRound className="size-5" />}
           </span>
           <div>

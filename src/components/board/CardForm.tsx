@@ -56,7 +56,7 @@ export function CardForm({
   return (
     <form
       onSubmit={submit}
-      className={compact ? 'space-y-3' : 'animate-pop-in space-y-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm'}
+      className={compact ? 'space-y-3' : 'animate-pop-in space-y-3 rounded-xl border border-slate-200 bg-surface p-3 shadow-sm'}
       onKeyDown={(e) => {
         if (e.key === 'Escape') onCancel()
         if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submit()

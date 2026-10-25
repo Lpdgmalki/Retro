@@ -21,7 +21,7 @@ export function PreviousActionsPanel({ teamId, currentRetroId }: { teamId: strin
   const pct = (done / previous.length) * 100
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
+    <section className="rounded-xl border border-slate-200 bg-surface shadow-sm">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}

@@ -10,18 +10,18 @@ type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'subtle'
 type Size = 'sm' | 'md' | 'lg' | 'icon' | 'icon-sm'
 
 const VARIANTS: Record<Variant, string> = {
-  primary: 'bg-indigo-600 text-white shadow-sm hover:bg-indigo-700 active:bg-indigo-800 disabled:bg-indigo-300',
+  primary: 'btn-glow text-white disabled:opacity-50 disabled:shadow-none',
   secondary:
-    'bg-white text-slate-700 ring-1 ring-inset ring-slate-200 shadow-sm hover:bg-slate-50 hover:text-slate-900 disabled:text-slate-400',
+    'bg-white/[0.04] text-slate-800 ring-1 ring-inset ring-slate-300/70 hover:bg-white/[0.08] hover:text-slate-900 hover:ring-slate-400/60 disabled:text-slate-400',
   ghost: 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 disabled:text-slate-300',
   subtle: 'bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:text-slate-400',
-  danger: 'bg-rose-600 text-white shadow-sm hover:bg-rose-700 disabled:bg-rose-300',
+  danger: 'bg-rose-600 text-white shadow-[0_8px_24px_-10px_rgb(225_29_72/0.8)] hover:bg-rose-500 disabled:opacity-50',
 }
 
 const SIZES: Record<Size, string> = {
-  sm: 'h-8 px-3 text-[13px] gap-1.5',
-  md: 'h-9 px-3.5 text-sm gap-2',
-  lg: 'h-11 px-5 text-[15px] gap-2',
+  sm: 'h-8 px-3.5 text-[13px] gap-1.5',
+  md: 'h-10 px-4.5 text-sm gap-2',
+  lg: 'h-12 px-6 text-[15px] gap-2',
   icon: 'size-9',
   'icon-sm': 'size-7',
 }
@@ -42,7 +42,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       type={type}
       disabled={disabled || loading}
       className={cx(
-        'inline-flex shrink-0 items-center justify-center rounded-lg font-medium whitespace-nowrap transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed',
+        'inline-flex shrink-0 items-center justify-center rounded-full font-semibold whitespace-nowrap transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas active:scale-[0.98] disabled:cursor-not-allowed disabled:active:scale-100',
         VARIANTS[variant],
         SIZES[size],
         className,
@@ -56,7 +56,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
 })
 
 const fieldBase =
-  'block w-full rounded-lg border-0 bg-white px-3 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-200 placeholder:text-slate-400 transition focus:ring-2 focus:ring-inset focus:ring-indigo-500 focus:outline-none disabled:bg-slate-50 disabled:text-slate-500'
+  'block w-full rounded-xl border-0 bg-surface-2 px-3.5 text-sm text-slate-900 ring-1 ring-inset ring-slate-300/70 placeholder:text-slate-400 transition focus:ring-2 focus:ring-inset focus:ring-indigo-500 focus:outline-none disabled:bg-slate-50 disabled:text-slate-500'
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement> & { invalid?: boolean }>(
   function Input({ className, invalid, ...rest }, ref) {
@@ -64,7 +64,7 @@ export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputE
       <input
         ref={ref}
         aria-invalid={invalid || undefined}
-        className={cx(fieldBase, 'h-9', invalid && 'ring-rose-400 focus:ring-rose-500', className)}
+        className={cx(fieldBase, 'h-10', invalid && 'ring-rose-400 focus:ring-rose-500', className)}
         {...rest}
       />
     )
@@ -90,7 +90,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSel
   ref,
 ) {
   return (
-    <select ref={ref} className={cx(fieldBase, 'h-9 pr-8', className)} {...rest}>
+    <select ref={ref} className={cx(fieldBase, 'h-10 pr-8', className)} {...rest}>
       {children}
     </select>
   )
@@ -182,7 +182,7 @@ export function Switch({
       >
         <span
           className={cx(
-            'pointer-events-none mt-0.5 ml-0.5 inline-block size-4 rounded-full bg-white shadow transition-transform',
+            'pointer-events-none mt-0.5 ml-0.5 inline-block size-4 rounded-full bg-surface shadow transition-transform',
             checked && 'translate-x-4',
           )}
         />
@@ -286,7 +286,7 @@ export function EmptyState({
 }
 
 export function Card({ className, children }: { className?: string; children: ReactNode }) {
-  return <div className={cx('rounded-xl border border-slate-200 bg-white shadow-sm', className)}>{children}</div>
+  return <div className={cx('card-premium rounded-2xl border border-slate-200', className)}>{children}</div>
 }
 
 export function ProgressBar({ value, className, tone = 'bg-indigo-500' }: { value: number; className?: string; tone?: string }) {

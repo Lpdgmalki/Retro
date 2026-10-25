@@ -41,13 +41,13 @@ export function Column({
           <h2 id={`col-${category.id}`} className={cx('flex items-center gap-2 text-sm font-semibold', category.text)}>
             <Icon className="size-4" />
             {category.label}
-            <span className="rounded-full bg-white/80 px-1.5 text-xs font-medium tabular-nums text-slate-500">{totalInCategory}</span>
+            <span className="rounded-full bg-surface/80 px-1.5 text-xs font-medium tabular-nums text-slate-500">{totalInCategory}</span>
           </h2>
           {board.canContribute && !adding && (
             <Button
               variant="ghost"
               size="icon-sm"
-              className={cx('hover:bg-white', category.text)}
+              className={cx('hover:bg-surface', category.text)}
               onClick={() => setAdding(true)}
               aria-label={`Ajouter dans ${category.label}`}
             >
@@ -104,7 +104,7 @@ export function Column({
           <button
             type="button"
             onClick={() => setAdding(true)}
-            className="flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-slate-200 py-2 text-xs font-medium text-slate-500 transition hover:border-slate-300 hover:bg-white hover:text-slate-700"
+            className="flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-slate-200 py-2 text-xs font-medium text-slate-500 transition hover:border-slate-300 hover:bg-surface hover:text-slate-700"
           >
             <Plus className="size-3.5" /> Ajouter une carte
           </button>

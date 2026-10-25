@@ -64,14 +64,14 @@ export function Modal({ open, onClose, title, description, children, footer, siz
   const widths = { sm: 'max-w-md', md: 'max-w-lg', lg: 'max-w-2xl' }
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4">
-      <div className="animate-fade-in absolute inset-0 bg-slate-900/40 backdrop-blur-[2px]" onClick={onClose} aria-hidden />
+      <div className="animate-fade-in absolute inset-0 bg-black/60 backdrop-blur-[2px]" onClick={onClose} aria-hidden />
       <div
         ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-label={title}
         className={cx(
-          'animate-pop-in relative flex max-h-[92vh] w-full flex-col rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl',
+          'animate-pop-in relative flex max-h-[92vh] w-full flex-col rounded-t-2xl bg-surface shadow-2xl sm:rounded-2xl',
           widths[size],
         )}
       >
@@ -113,13 +113,13 @@ export function Drawer({
   if (!open) return null
   return createPortal(
     <div className="fixed inset-0 z-40 flex justify-end">
-      <div className="animate-fade-in absolute inset-0 bg-slate-900/25" onClick={onClose} aria-hidden />
+      <div className="animate-fade-in absolute inset-0 bg-black/50" onClick={onClose} aria-hidden />
       <div
         ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="animate-slide-in relative flex h-full w-full max-w-xl flex-col bg-white shadow-2xl"
+        className="animate-slide-in relative flex h-full w-full max-w-xl flex-col bg-surface shadow-2xl"
       >
         <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-5 py-3.5">
           <div className="min-w-0 flex-1">{header ?? <h2 className="text-base font-semibold">{title}</h2>}</div>

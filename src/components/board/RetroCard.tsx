@@ -77,7 +77,7 @@ function RetroCardInner({ board, card, rank, onOpen, onConvert }: Props) {
   return (
     <article
       className={cx(
-        'group animate-card-in relative rounded-xl border bg-white p-3.5 shadow-sm transition hover:shadow-md',
+        'group animate-card-in relative rounded-xl border bg-surface p-3.5 shadow-sm transition hover:shadow-md',
         rank !== null && rank < 3 ? 'border-indigo-200 ring-1 ring-indigo-100' : 'border-slate-200',
       )}
       aria-label={card.title}

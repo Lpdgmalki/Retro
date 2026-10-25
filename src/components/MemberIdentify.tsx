@@ -22,9 +22,9 @@ export function WelcomeCard({
   const { forgetIdentity } = useAuth()
   return (
     <div className="animate-pop-in flex flex-col items-center text-center">
-      <Avatar name={memberDisplayName(member)} seed={member.id} src={member.photo_url} size="xl" className="ring-4 ring-white shadow-md" />
-      <p className="mt-4 text-xl font-semibold text-slate-900">{welcomeLine(member)}</p>
-      <p className="text-sm text-slate-600">{memberDisplayName(member)}</p>
+      <Avatar name={memberDisplayName(member)} seed={member.id} src={member.photo_url} size="xl" className="ring-4 ring-surface shadow-md" />
+      <p className="mt-5 text-xs font-semibold tracking-[0.18em] text-indigo-400 uppercase">Identité confirmée</p>
+      <p className="mt-1 text-2xl font-bold text-slate-900">{welcomeLine(member)}</p>
       {member.job_title && (
         <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-3 py-1 text-sm font-medium text-indigo-700">
           <Briefcase className="size-3.5" /> {member.job_title}
@@ -80,6 +80,10 @@ export function MemberIdentify({ autoFocus }: { autoFocus?: boolean }) {
     return () => clearTimeout(t)
   }, [query])
 
+  // Liste masquée si l'e-mail saisi correspond exactement à l'unique suggestion.
+  const exact = suggestions.length === 1 && suggestions[0].email.toLowerCase() === query.trim().toLowerCase()
+  const showList = open && suggestions.length > 0 && !exact
+
   async function choose(email: string) {
     setBusy(true)
     setError(null)
@@ -119,7 +123,7 @@ export function MemberIdentify({ autoFocus }: { autoFocus?: boolean }) {
           autoComplete="email"
           autoFocus={autoFocus}
           role="combobox"
-          aria-expanded={open && suggestions.length > 0}
+          aria-expanded={showList}
           aria-controls={listId}
           aria-autocomplete="list"
           aria-activedescendant={active >= 0 ? `${listId}-${active}` : undefined}
@@ -132,7 +136,6 @@ export function MemberIdentify({ autoFocus }: { autoFocus?: boolean }) {
             setError(null)
           }}
           onFocus={() => suggestions.length && setOpen(true)}
-          onBlur={() => setTimeout(() => setOpen(false), 150)}
           onKeyDown={(e) => {
             if (e.key === 'ArrowDown') {
               e.preventDefault()
@@ -146,12 +149,13 @@ export function MemberIdentify({ autoFocus }: { autoFocus?: boolean }) {
             }
           }}
         />
-        {open && suggestions.length > 0 && (
+      </div>
+        {showList && (
           <ul
             id={listId}
             role="listbox"
             aria-label="Suggestions"
-            className="animate-pop-in absolute inset-x-0 top-full z-20 mt-1 max-h-80 overflow-auto rounded-xl border border-slate-200 bg-white p-1 shadow-lg"
+            className="animate-pop-in mt-2 max-h-72 overflow-auto rounded-xl border border-slate-200 bg-surface-2 p-1"
           >
             {suggestions.map((m, i) => (
               <li
@@ -176,7 +180,6 @@ export function MemberIdentify({ autoFocus }: { autoFocus?: boolean }) {
             ))}
           </ul>
         )}
-      </div>
       {error && (
         <p className="mt-2 text-sm text-rose-600" role="alert">
           {error}

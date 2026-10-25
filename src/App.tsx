@@ -64,9 +64,8 @@ function SessionGate() {
     <Routes>
       <Route path="/admin/login" element={<AdminLoginPage />} />
       <Route path="/join/:token" element={<JoinPage />} />
-      <Route path="/r/:id/present" element={<PresentPage />} />
-
       <Route element={<AdminGuard />}>
+        <Route path="/r/:id/present" element={<PresentPage />} />
         <Route element={<AppShell />}>
           <Route path="/admin" element={<DashboardPage />} />
           <Route path="/admin/new" element={<NewRetroPage />} />

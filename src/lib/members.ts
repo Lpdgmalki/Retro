@@ -6,11 +6,9 @@ export function memberDisplayName(m: Pick<MemberProfile, 'first_name' | 'last_na
   return (full || m.email.split('@')[0]).slice(0, 40)
 }
 
-/** Formule d'accueil : « Bienvenue Mme El Malki », « Bienvenue M. Martin » ou « Bienvenue Fatima ». */
+/** Formule d'accueil : « Bienvenue Mme Fatima El Malki » (civilité, prénom et nom). */
 export function welcomeLine(m: Pick<MemberProfile, 'civility' | 'first_name' | 'last_name' | 'email'>): string {
-  if (m.civility && m.last_name.trim()) return `Bienvenue ${m.civility} ${m.last_name.trim()}`
-  const name = m.first_name.trim() || memberDisplayName(m)
-  return `Bienvenue ${name}`
+  return ['Bienvenue', m.civility, memberDisplayName(m)].filter(Boolean).join(' ')
 }
 
 export const PHOTO_BUCKET = 'member-photos'

@@ -70,7 +70,7 @@ export function StatusControl({ board }: { board: Board }) {
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-surface px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
         <div className="hidden md:block">
           <StatusStepper status={retro.status} />

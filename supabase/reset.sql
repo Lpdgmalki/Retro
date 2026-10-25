@@ -7,6 +7,7 @@ drop policy if exists member_photos_update on storage.objects;
 drop policy if exists member_photos_delete on storage.objects;
 
 drop table if exists
+  public.retro_member_invites, public.retro_invites,
   public.member_sessions, public.members, public.app_settings, public.app_admins,
   public.action_items, public.votes, public.comments, public.card_owners,
   public.cards, public.participants, public.retros, public.team_members, public.teams
@@ -27,7 +28,7 @@ begin
         'get_vote_usage', 'duplicate_retro', 'is_admin', 'has_admin', 'claim_first_admin',
         'list_admins', 'add_admin', 'remove_admin', 'member_display_name', 'suggest_members',
         'identify_member', 'my_member', 'forget_identity', 'join_retro_internal',
-        'join_open_retro', 'list_open_retros'
+        'join_open_retro', 'list_open_retros', 'list_my_retros', 'is_invited', 'retros_create_invite'
       )
   loop
     execute format('drop function if exists %s cascade', f.sig);

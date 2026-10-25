@@ -20,7 +20,6 @@ export interface Retro {
   goal: string
   closes_at: string | null
   status: RetroStatus
-  share_token: string
   max_votes: number
   allow_multiple_votes: boolean
   confidential_votes: boolean

@@ -1,33 +1,118 @@
 @import 'tailwindcss';
 
+/*
+ * Thème sombre « premium » (fond bleu nuit, bleu électrique, typographie affirmée).
+ * La palette Tailwind est redéfinie : les classes existantes (slate, indigo, emerald…)
+ * produisent automatiquement le rendu sombre. Les teintes 50-200 deviennent des fonds
+ * sombres teintés, 700-900 des textes clairs ; 400-600 restent les couleurs vives.
+ * Une version claire est rétablie pour l'impression (export PDF).
+ */
 @theme {
-  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-sans: 'Plus Jakarta Sans Variable', 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --color-surface: #0e1526;
+  --color-surface-2: #0a1020;
+  --color-canvas: #060a14;
+
+  --color-slate-50: #0a1020;
+  --color-slate-100: #121b2f;
+  --color-slate-200: #1d2840;
+  --color-slate-300: #2a3753;
+  --color-slate-400: #64718d;
+  --color-slate-500: #8b97b1;
+  --color-slate-600: #a8b3c9;
+  --color-slate-700: #c8d0df;
+  --color-slate-800: #e3e8f1;
+  --color-slate-900: #f6f8fc;
+
+  /* Accent principal : bleu électrique */
+  --color-indigo-50: #0d1a38;
+  --color-indigo-100: #12244c;
+  --color-indigo-200: #1b3670;
+  --color-indigo-300: #2a4f9a;
+  --color-indigo-400: #5b95ff;
+  --color-indigo-500: #3a7bff;
+  --color-indigo-600: #1f66ff;
+  --color-indigo-700: #8fb6ff;
+  --color-indigo-800: #b9d0ff;
+  --color-indigo-900: #e1ebff;
+
+  --color-emerald-50: #0a231c;
+  --color-emerald-100: #0e3127;
+  --color-emerald-200: #15493a;
+  --color-emerald-300: #1f6b53;
+  --color-emerald-700: #5ee6a8;
+  --color-emerald-800: #93f0c4;
+
+  --color-rose-50: #2a0f19;
+  --color-rose-100: #3a1422;
+  --color-rose-200: #5a1d33;
+  --color-rose-300: #7d2847;
+  --color-rose-700: #ff8fab;
+  --color-rose-800: #ffb3c6;
+
+  --color-sky-50: #0a1f30;
+  --color-sky-100: #0e2c44;
+  --color-sky-200: #154264;
+  --color-sky-300: #1e5d8c;
+  --color-sky-700: #7dd3fc;
+  --color-sky-800: #a5e2fd;
+
+  --color-violet-50: #1a1233;
+  --color-violet-100: #241947;
+  --color-violet-200: #362570;
+  --color-violet-300: #4c349a;
+  --color-violet-700: #c4b5fd;
+  --color-violet-800: #ddd3fe;
+
+  --color-amber-50: #261c08;
+  --color-amber-100: #33260b;
+  --color-amber-200: #523d12;
+  --color-amber-300: #7a5a1a;
+  --color-amber-700: #fcd34d;
+  --color-amber-800: #fde68a;
+  --color-amber-900: #fef3c7;
+
+  --color-teal-100: #0d2e2e;
+  --color-teal-700: #5eead4;
+  --color-orange-100: #33200d;
+  --color-orange-700: #fdba74;
 
   --animate-fade-in: fade-in 150ms ease-out;
-  --animate-pop-in: pop-in 160ms cubic-bezier(0.16, 1, 0.3, 1);
-  --animate-slide-in: slide-in 220ms cubic-bezier(0.16, 1, 0.3, 1);
-  --animate-card-in: card-in 220ms ease-out;
-  --animate-toast-in: toast-in 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-pop-in: pop-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slide-in: slide-in 240ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-card-in: card-in 260ms ease-out;
+  --animate-toast-in: toast-in 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-rise: rise 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-glow: glow 6s ease-in-out infinite;
 
   @keyframes fade-in {
     from { opacity: 0; }
     to { opacity: 1; }
   }
   @keyframes pop-in {
-    from { opacity: 0; transform: translateY(4px) scale(0.98); }
+    from { opacity: 0; transform: translateY(6px) scale(0.98); }
     to { opacity: 1; transform: none; }
   }
   @keyframes slide-in {
-    from { transform: translateX(24px); opacity: 0; }
+    from { transform: translateX(28px); opacity: 0; }
     to { transform: none; opacity: 1; }
   }
   @keyframes card-in {
-    from { opacity: 0; transform: translateY(6px); }
+    from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: none; }
   }
   @keyframes toast-in {
-    from { opacity: 0; transform: translateY(8px); }
+    from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: none; }
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes glow {
+    0%, 100% { opacity: 0.55; transform: scale(1); }
+    50% { opacity: 0.85; transform: scale(1.06); }
   }
 }
 
@@ -35,14 +120,67 @@
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-feature-settings: 'cv11', 'ss01';
+    color-scheme: dark;
   }
   body {
-    @apply bg-slate-50 text-slate-900;
+    @apply text-slate-900;
+    background:
+      radial-gradient(1100px 520px at 12% -8%, rgb(31 102 255 / 0.20), transparent 70%),
+      radial-gradient(900px 480px at 95% 0%, rgb(0 178 255 / 0.10), transparent 70%),
+      var(--color-canvas);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+  h1, h2, h3 {
+    letter-spacing: -0.015em;
+  }
+  ::selection {
+    background: rgb(31 102 255 / 0.45);
+    color: white;
   }
   button:not(:disabled),
   [role='button']:not(:disabled) {
     cursor: pointer;
+  }
+  input[type='date'],
+  input[type='datetime-local'] {
+    color-scheme: dark;
+  }
+  option {
+    background: var(--color-surface);
+    color: var(--color-slate-900);
+  }
+}
+
+@layer components {
+  /* Bouton principal : dégradé bleu électrique avec halo. */
+  .btn-glow {
+    background-image: linear-gradient(135deg, #1f66ff 0%, #2f8bff 55%, #00b4ff 100%);
+    box-shadow: 0 8px 28px -10px rgb(31 102 255 / 0.85), inset 0 1px 0 rgb(255 255 255 / 0.18);
+  }
+  .btn-glow:hover:not(:disabled) {
+    filter: brightness(1.08);
+    box-shadow: 0 10px 34px -8px rgb(31 102 255 / 0.95), inset 0 1px 0 rgb(255 255 255 / 0.22);
+  }
+  /* Carte : surface sombre, liseré lumineux discret en haut. */
+  .card-premium {
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.035), transparent 40%), var(--color-surface);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 20px 50px -30px rgb(0 0 0 / 0.8);
+  }
+  /* Texte en dégradé pour les grands titres. */
+  .text-gradient {
+    background-image: linear-gradient(100deg, #ffffff 10%, #9cc2ff 55%, #38bdf8 95%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  /* Trame de fond en grille. */
+  .bg-grid {
+    background-image:
+      linear-gradient(rgb(255 255 255 / 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.04) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(ellipse at 50% 0%, black 30%, transparent 75%);
   }
 }
 
@@ -55,11 +193,62 @@
   }
 }
 
+/* Impression / export PDF : palette claire. */
 @media print {
   @page {
     margin: 14mm;
   }
+  :root {
+    color-scheme: light;
+    --color-surface: #ffffff;
+    --color-surface-2: #ffffff;
+    --color-canvas: #ffffff;
+    --color-slate-50: #f8fafc;
+    --color-slate-100: #f1f5f9;
+    --color-slate-200: #e2e8f0;
+    --color-slate-300: #cbd5e1;
+    --color-slate-400: #94a3b8;
+    --color-slate-500: #64748b;
+    --color-slate-600: #475569;
+    --color-slate-700: #334155;
+    --color-slate-800: #1e293b;
+    --color-slate-900: #0f172a;
+    --color-indigo-50: #eef2ff;
+    --color-indigo-100: #e0e7ff;
+    --color-indigo-200: #c7d2fe;
+    --color-indigo-700: #1d4ed8;
+    --color-emerald-50: #ecfdf5;
+    --color-emerald-200: #a7f3d0;
+    --color-emerald-700: #047857;
+    --color-rose-50: #fff1f2;
+    --color-rose-200: #fecdd3;
+    --color-rose-700: #be123c;
+    --color-sky-50: #f0f9ff;
+    --color-sky-200: #bae6fd;
+    --color-sky-700: #0369a1;
+    --color-violet-50: #f5f3ff;
+    --color-violet-200: #ddd6fe;
+    --color-violet-700: #6d28d9;
+    --color-amber-50: #fffbeb;
+    --color-amber-200: #fde68a;
+    --color-amber-800: #92400e;
+  }
   body {
+    background: white !important;
+  }
+  .animate-rise,
+  .animate-card-in,
+  .animate-glow {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .card-premium {
     background: white;
+    box-shadow: none;
+  }
+  .text-gradient {
+    color: #0f172a;
+    background: none;
   }
 }

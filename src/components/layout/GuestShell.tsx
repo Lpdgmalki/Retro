@@ -25,7 +25,7 @@ export function GuestShell() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/85 backdrop-blur print:hidden">
+      <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-surface/85 backdrop-blur print:hidden">
         <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-3 px-4 sm:px-6 lg:px-8">
           <Link to="/" className="flex items-center gap-2 font-semibold text-slate-900">
             <BrandMark />

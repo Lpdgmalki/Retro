@@ -333,7 +333,8 @@ export function useRetroBoard(retroId: string | undefined, userId: string | unde
   const derived = useMemo(() => {
     const retro = state.retro
     const me = state.participants.find((p) => p.user_id === userId) ?? null
-    const isFacilitator = me?.role === 'facilitator' || (isAdmin && Boolean(me))
+    // Seuls les administrateurs animent (règle appliquée aussi côté base).
+    const isFacilitator = isAdmin && Boolean(me)
     const myVotes = new Map<string, number>()
     let myVotesUsed = 0
     for (const v of state.votes) {
@@ -474,17 +475,6 @@ export function useRetroBoard(retroId: string | undefined, userId: string | unde
         if ((data as RetroWithTeam).confidential_votes && (data as RetroWithTeam).votes_revealed) {
           dispatch({ type: 'totals', totals: await fetchTotals(retroId) })
         }
-      },
-      async setRole(userIdToChange: string, role: Participant['role']) {
-        const { data, error } = await supabase
-          .from('participants')
-          .update({ role })
-          .eq('retro_id', retroId)
-          .eq('user_id', userIdToChange)
-          .select()
-          .single()
-        if (error) throw error
-        dispatch({ type: 'upsert', table: 'participants', row: data })
       },
       async renameMe(name: string) {
         const { data, error } = await supabase

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Crown, MoreHorizontal, Pencil, UserMinus, UserCog } from 'lucide-react'
+import { Crown, MoreHorizontal, Pencil, UserMinus } from 'lucide-react'
 import { ConfirmDialog, Modal } from '../ui/Modal'
 import { Avatar, Badge, Button, Input, cx } from '../ui/primitives'
 import { Menu } from '../ui/Menu'
@@ -71,7 +71,7 @@ export function ParticipantsDialog({
                   <Avatar name={p.display_name} seed={p.user_id} src={p.photo_url} />
                   <span
                     className={cx(
-                      'absolute -right-0.5 -bottom-0.5 size-2.5 rounded-full ring-2 ring-white',
+                      'absolute -right-0.5 -bottom-0.5 size-2.5 rounded-full ring-2 ring-surface',
                       online.has(p.user_id) ? 'bg-emerald-500' : 'bg-slate-300',
                     )}
                     title={online.has(p.user_id) ? 'En ligne' : 'Hors ligne'}
@@ -106,7 +106,7 @@ export function ParticipantsDialog({
                 </div>
                 {p.role === 'facilitator' && (
                   <Badge className="bg-amber-50 text-amber-800 ring-amber-200">
-                    <Crown className="size-3" /> Facilitateur
+                    <Crown className="size-3" /> Animateur
                   </Badge>
                 )}
                 {isMe && !renaming && !p.member_id && (
@@ -126,17 +126,6 @@ export function ParticipantsDialog({
                   <Menu
                     label={`Gérer ${p.display_name}`}
                     items={[
-                      p.role === 'facilitator'
-                        ? {
-                            label: 'Retirer le rôle de facilitateur',
-                            icon: <UserCog className="size-4" />,
-                            onSelect: () => board.mutations.setRole(p.user_id, 'participant').catch(toast.error),
-                          }
-                        : {
-                            label: 'Nommer co-facilitateur',
-                            icon: <Crown className="size-4" />,
-                            onSelect: () => board.mutations.setRole(p.user_id, 'facilitator').catch(toast.error),
-                          },
                       {
                         label: 'Retirer de la rétrospective',
                         icon: <UserMinus className="size-4" />,

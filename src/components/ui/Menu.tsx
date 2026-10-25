@@ -57,7 +57,7 @@ export function Menu({
           ref={listRef}
           role="menu"
           className={cx(
-            'animate-pop-in absolute z-30 mt-1 min-w-48 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10',
+            'animate-pop-in absolute z-30 mt-1 min-w-48 rounded-lg border border-slate-200 bg-surface p-1 shadow-lg shadow-black/30',
             align === 'right' ? 'right-0' : 'left-0',
           )}
         >

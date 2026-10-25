@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, Navigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Download, FileText, MessageSquare, Plus, Printer, Rocket, ThumbsUp } from 'lucide-react'
 import { Button, Card, EmptyState, ProgressBar, Textarea, cx } from '../components/ui/primitives'
 import { ConfirmDialog } from '../components/ui/Modal'
@@ -23,6 +23,8 @@ export function SummaryPage() {
   const { id } = useParams()
   const { user, isAdmin } = useAuth()
   const board = useRetroBoard(id, user?.id, isAdmin)
+  // La synthèse détaillée est réservée à l'administrateur ; les invités voient le rapport.
+  if (!isAdmin) return <Navigate to={`/r/${id}`} replace />
   return (
     <RetroGate board={board}>
       <SummaryView board={board} />

@@ -50,7 +50,7 @@ function PresentView({ board }: { board: Board }) {
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-100">
-      <header className="flex items-center justify-between gap-4 border-b border-slate-200 bg-white px-6 py-3">
+      <header className="flex items-center justify-between gap-4 border-b border-slate-200 bg-surface px-6 py-3">
         <div className="min-w-0">
           <p className="text-xs text-slate-500">{retro.teams?.name}</p>
           <div className="flex items-center gap-3">
@@ -69,7 +69,7 @@ function PresentView({ board }: { board: Board }) {
                 onClick={() => setView(v)}
                 className={cx(
                   'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition',
-                  view === v ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100',
+                  view === v ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-100',
                 )}
               >
                 {v === 'overview' && <LayoutGrid className="size-4" />}
@@ -100,14 +100,14 @@ function PresentView({ board }: { board: Board }) {
               const list = sorted.filter((c) => c.category === cat.id)
               const Icon = cat.icon
               return (
-                <section key={cat.id} className={cx('rounded-2xl border bg-white/60 p-4', cat.border)}>
+                <section key={cat.id} className={cx('rounded-2xl border bg-surface/60 p-4', cat.border)}>
                   <h3 className={cx('mb-3 flex items-center gap-2 text-lg font-semibold', cat.text)}>
                     <Icon className="size-5" /> {cat.label}
                     <span className="ml-auto text-base font-medium text-slate-400 tabular-nums">{list.length}</span>
                   </h3>
                   <ul className="space-y-2">
                     {list.map((c) => (
-                      <li key={c.id} className="animate-card-in rounded-xl bg-white px-4 py-3 shadow-sm">
+                      <li key={c.id} className="animate-card-in rounded-xl bg-surface px-4 py-3 shadow-sm">
                         <p className="text-base leading-snug font-medium text-slate-900">{c.title}</p>
                         <CardMeta board={board} cardId={c.id} anonymous={c.is_anonymous} authorId={c.author_id} />
                       </li>
@@ -126,7 +126,7 @@ function PresentView({ board }: { board: Board }) {
               .map((c) => {
                 const cat = CATEGORIES.find((x) => x.id === c.category)!
                 return (
-                  <article key={c.id} className="animate-card-in relative overflow-hidden rounded-2xl bg-white p-6 shadow-sm">
+                  <article key={c.id} className="animate-card-in relative overflow-hidden rounded-2xl bg-surface p-6 shadow-sm">
                     <span className={cx('absolute inset-y-0 left-0 w-1.5', cat.accentBar)} />
                     <h3 className="text-xl leading-snug font-semibold text-slate-900">{c.title}</h3>
                     {c.description && <p className="mt-2 text-base whitespace-pre-line text-slate-600">{c.description}</p>}
@@ -139,13 +139,13 @@ function PresentView({ board }: { board: Board }) {
         )}
 
         {view === 'ranking' && (
-          <div className="mx-auto max-w-3xl rounded-2xl bg-white p-6 text-lg shadow-sm">
+          <div className="mx-auto max-w-3xl rounded-2xl bg-surface p-6 text-lg shadow-sm">
             <RankingList board={board} />
           </div>
         )}
       </main>
 
-      <footer className="flex items-center justify-between border-t border-slate-200 bg-white px-6 py-2.5 text-sm text-slate-500">
+      <footer className="flex items-center justify-between border-t border-slate-200 bg-surface px-6 py-2.5 text-sm text-slate-500">
         <Button variant="ghost" size="sm" onClick={() => go(-1)}>
           <ChevronLeft className="size-4" /> Précédent
         </Button>

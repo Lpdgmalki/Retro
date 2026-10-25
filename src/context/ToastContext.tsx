@@ -52,7 +52,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         {toasts.map((t) => (
           <div
             key={t.id}
-            className="animate-toast-in pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-lg shadow-slate-900/5"
+            className="animate-toast-in pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-xl border border-slate-200 bg-surface px-4 py-3 text-sm shadow-lg shadow-black/30"
           >
             {t.kind === 'success' && <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600" />}
             {t.kind === 'error' && <AlertCircle className="mt-0.5 size-4 shrink-0 text-rose-600" />}

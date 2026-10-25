@@ -21,7 +21,10 @@ L’application comporte deux espaces :
 | **Back office** | `/admin` | Administrateurs (e-mail + mot de passe) | Tableau de bord, création et gestion des rétrospectives, **annuaire des utilisateurs** (civilité, prénom, nom, e-mail, poste, photo, actif ; import/export CSV), suivi des actions, **paramètres** (nom de l’organisation, textes d’accueil, suggestions d’e-mails, invités hors annuaire, valeurs par défaut des rétros), gestion des administrateurs. |
 
 Règles d’accès :
-- **Seuls les administrateurs créent des rétrospectives** ; ils sont facilitateurs de toutes les rétros.
+- **Seuls les administrateurs créent, animent et invitent** : boutons Inviter, Présenter, Synthèse et Paramètres réservés au back office ; le lien d’invitation n’est lisible que par les administrateurs.
+- **Invitations** : nominatives depuis l’annuaire (l’invité arrive directement sur sa rétro après s’être identifié) ou par lien.
+- **Cloisonnement** : un invité ne voit que les rétrospectives auxquelles il a été invité.
+- **Rapport de fin** : dès la clôture par l’administrateur, les invités voient automatiquement un rapport mis en forme (chiffres clés, podium des idées, forces et points de vigilance, décisions, plan d’actions, contribution personnelle), téléchargeable en PDF.
 - Les invités s’identifient avec un e-mail **présent et actif dans l’annuaire**, puis votent et commentent. Ils peuvent aussi proposer des cartes si l’option « Les participants peuvent proposer des cartes » est activée sur la rétro (réglable par rétro, valeur par défaut dans les paramètres).
 - Option « Invités hors annuaire » (désactivée par défaut) : permet de rejoindre via un lien d’invitation avec un simple pseudo.
 - **Premier administrateur** : ouvrez `/admin` → « Créer le compte administrateur ». Ce formulaire n’apparaît que tant qu’aucun administrateur n’existe. Les suivants créent leur compte sur la même page puis sont promus dans *Paramètres → Administrateurs*.

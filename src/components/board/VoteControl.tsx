@@ -63,8 +63,8 @@ export function VoteControl({ board, card, size = 'sm' }: { board: Board; card: 
             'inline-flex items-center gap-1 rounded-lg font-medium transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-40',
             size === 'lg' ? 'h-10 px-4 text-sm' : 'h-7 px-2.5 text-xs',
             mine
-              ? 'bg-indigo-600 text-white shadow-sm hover:bg-indigo-700'
-              : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-indigo-50 hover:text-indigo-700 hover:ring-indigo-200',
+              ? 'bg-indigo-600 text-white shadow-sm hover:bg-indigo-500'
+              : 'bg-surface text-slate-600 ring-1 ring-slate-200 hover:bg-indigo-50 hover:text-indigo-700 hover:ring-indigo-200',
           )}
         >
           <ThumbsUp className={size === 'lg' ? 'size-4' : 'size-3.5'} />
@@ -81,7 +81,7 @@ export function VoteControl({ board, card, size = 'sm' }: { board: Board; card: 
       <div
         className={cx(
           'inline-flex items-center rounded-lg ring-1',
-          mine ? 'bg-indigo-50 ring-indigo-200' : 'bg-white ring-slate-200',
+          mine ? 'bg-indigo-50 ring-indigo-200' : 'bg-surface ring-slate-200',
         )}
       >
         <button

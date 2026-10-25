@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
-import { Link, useLocation, useParams } from 'react-router-dom'
-import { BarChart3, ChevronDown, Monitor, Search, Settings, Share2, Target, Trophy, X } from 'lucide-react'
+import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom'
+import { BarChart3, ChevronDown, Sparkles, Monitor, Search, Settings, Share2, Target, Trophy, X } from 'lucide-react'
 import { Button, Input, Select, cx } from '../components/ui/primitives'
 import { Column } from '../components/board/Column'
 import { CardDrawer } from '../components/board/CardDrawer'
@@ -10,7 +10,8 @@ import { ParticipantsDialog } from '../components/board/ParticipantsDialog'
 import { StatusControl, StatusStepper } from '../components/board/StatusControl'
 import { RankingDialog } from '../components/board/RankingDialog'
 import { PreviousActionsPanel } from '../components/board/PreviousActionsPanel'
-import { RetroGate, ReadOnlyBanner } from '../components/board/RetroGate'
+import { RetroGate } from '../components/board/RetroGate'
+import { ReportView } from '../components/report/ReportView'
 import { RetroHeader } from '../components/board/RetroHeader'
 import { ActionFormModal } from '../components/actions/ActionFormModal'
 import { useAuth } from '../context/AuthContext'
@@ -27,11 +28,10 @@ export function BoardPage() {
   const { id } = useParams()
   const { user, isAdmin } = useAuth()
   const board = useRetroBoard(id, user?.id, isAdmin)
-  return (
-    <RetroGate board={board}>
-      <BoardView board={board} />
-    </RetroGate>
-  )
+  const [params] = useSearchParams()
+  // Rétro terminée : les invités voient le rapport ; l'administrateur peut le prévisualiser.
+  const showReport = board.retro?.status === 'closed' && (!isAdmin || params.get('view') === 'report')
+  return <RetroGate board={board}>{showReport ? <ReportView board={board} /> : <BoardView board={board} />}</RetroGate>
 }
 
 function BoardView({ board }: { board: Board }) {
@@ -95,7 +95,15 @@ function BoardView({ board }: { board: Board }) {
         online={online}
         onParticipants={() => setDialog('participants')}
         actions={
+          board.isFacilitator && (
           <>
+            {retro.status === 'closed' && (
+              <Link to={`/r/${retro.id}?view=report`}>
+                <Button size="sm">
+                  <Sparkles className="size-4" /> Rapport
+                </Button>
+              </Link>
+            )}
             <Button variant="secondary" size="sm" onClick={() => setDialog('share')}>
               <Share2 className="size-4" /> Inviter
             </Button>
@@ -109,19 +117,16 @@ function BoardView({ board }: { board: Board }) {
                 <BarChart3 className="size-4" /> Synthèse
               </Button>
             </Link>
-            {board.isFacilitator && (
-              <Button variant="secondary" size="icon" onClick={() => setDialog('settings')} aria-label="Paramètres" className="size-8">
-                <Settings className="size-4" />
-              </Button>
-            )}
+            <Button variant="secondary" size="icon" onClick={() => setDialog('settings')} aria-label="Paramètres" className="size-8">
+              <Settings className="size-4" />
+            </Button>
           </>
+          )
         }
       />
 
-      <ReadOnlyBanner board={board} />
-
       {retro.goal && (
-        <div className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm">
+        <div className="rounded-xl border border-slate-200 bg-surface px-4 py-2.5 shadow-sm">
           <button
             type="button"
             className="flex w-full items-center gap-2 text-left text-xs font-medium tracking-wide text-slate-500 uppercase"
@@ -138,7 +143,7 @@ function BoardView({ board }: { board: Board }) {
       {board.isFacilitator ? (
         <StatusControl board={board} />
       ) : (
-        <div className="flex flex-col gap-1 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-1 rounded-xl border border-slate-200 bg-surface px-4 py-3 shadow-sm md:flex-row md:items-center md:justify-between">
           <StatusStepper status={retro.status} />
           {retro.status === 'draft' && <p className="text-xs text-slate-500">Le facilitateur prépare la session…</p>}
         </div>
@@ -211,7 +216,7 @@ function BoardView({ board }: { board: Board }) {
             onClick={() => setMobileTab(c.id)}
             className={cx(
               'flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ring-1 transition',
-              mobileTab === c.id ? c.chip : 'bg-white text-slate-600 ring-slate-200',
+              mobileTab === c.id ? c.chip : 'bg-surface text-slate-600 ring-slate-200',
             )}
           >
             <span className={cx('size-2 rounded-full', c.dot)} />
@@ -238,7 +243,15 @@ function BoardView({ board }: { board: Board }) {
       </div>
 
       <CardDrawer board={board} cardId={openCard} onClose={() => setOpenCard(null)} onConvert={setConvertCard} />
-      <ShareDialog open={dialog === 'share'} onClose={() => setDialog(null)} retro={retro} teamName={retro.teams?.name ?? ''} />
+      {board.isFacilitator && (
+        <ShareDialog
+          open={dialog === 'share'}
+          onClose={() => setDialog(null)}
+          retro={retro}
+          teamName={retro.teams?.name ?? ''}
+          participants={board.participants}
+        />
+      )}
       {board.isFacilitator && <SettingsDialog open={dialog === 'settings'} onClose={() => setDialog(null)} board={board} />}
       <ParticipantsDialog open={dialog === 'participants'} onClose={() => setDialog(null)} board={board} online={online} />
       <RankingDialog open={dialog === 'ranking'} onClose={() => setDialog(null)} board={board} onOpen={setOpenCard} />
@@ -273,7 +286,7 @@ function VoteBanner({ board, onRanking }: { board: Board; onRanking: () => void 
           {Array.from({ length: Math.min(retro.max_votes, 20) }).map((_, i) => (
             <span
               key={i}
-              className={cx('size-2.5 rounded-full transition-colors', i < board.myVotesUsed ? 'bg-amber-500' : 'bg-white ring-1 ring-amber-300')}
+              className={cx('size-2.5 rounded-full transition-colors', i < board.myVotesUsed ? 'bg-amber-500' : 'bg-surface ring-1 ring-amber-300')}
             />
           ))}
         </div>

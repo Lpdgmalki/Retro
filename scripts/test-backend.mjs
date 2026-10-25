@@ -150,6 +150,7 @@ await test('suggestions d’e-mails et identification', async () => {
 
 console.log('\nCréation et partage')
 let retro
+let token
 await test('create_retro crée la rétro, l’équipe et le facilitateur', async () => {
   const { data, error } = await alice.client.rpc('create_retro', {
     p_team_id: null,
@@ -169,7 +170,11 @@ await test('create_retro crée la rétro, l’équipe et le facilitateur', async
   if (error) throw error
   retro = data
   assert(retro.status === 'draft', 'statut initial brouillon')
-  assert(retro.share_token.length === 32, 'jeton de partage')
+  const { data: inv, error: invErr } = await alice.client.from('retro_invites').select('token').eq('retro_id', retro.id).single()
+  if (invErr) throw invErr
+  token = inv.token
+  assert(token.length === 32, 'jeton de partage')
+  assert(!('share_token' in retro), 'le jeton ne circule plus avec la rétro')
 })
 
 await test('validation : sprint vide refusé', async () => {
@@ -194,16 +199,21 @@ await test('un extérieur ne peut pas lire cartes ni participants', async () => 
 })
 
 await test('sans identité annuaire, impossible de rejoindre', async () => {
-  await expectError(eve.client.rpc('join_retro', { p_token: retro.share_token, p_display_name: 'Eve' }), 'Identifiez-vous')
+  await expectError(eve.client.rpc('join_retro', { p_token: token, p_display_name: 'Eve' }), 'Identifiez-vous')
+})
+
+await test('seul l’administrateur lit le lien d’invitation', async () => {
+  const { data } = await eve.client.from('retro_invites').select('*')
+  assert(data.length === 0, 'lien invisible pour un invité')
 })
 
 await test('aperçu par jeton puis adhésion (identité annuaire)', async () => {
-  const { data: prev } = await bob.client.rpc('preview_retro', { p_token: retro.share_token })
+  const { data: prev } = await bob.client.rpc('preview_retro', { p_token: token })
   assert(prev[0].sprint_name === 'Sprint 1' && prev[0].already_joined === false, 'aperçu')
-  const { data: id, error } = await bob.client.rpc('join_retro', { p_token: retro.share_token, p_display_name: 'Bob' })
+  const { data: id, error } = await bob.client.rpc('join_retro', { p_token: token, p_display_name: 'Bob' })
   if (error) throw error
   assert(id === retro.id, 'retourne l’id')
-  await carol.client.rpc('join_retro', { p_token: retro.share_token, p_display_name: 'Carol' })
+  await carol.client.rpc('join_retro', { p_token: token, p_display_name: 'Carol' })
   const { data } = await bob.client.from('retros').select('id').eq('id', retro.id)
   assert(data.length === 1, 'visible après adhésion')
   const { data: p } = await bob.client.from('participants').select('*').eq('retro_id', retro.id).eq('user_id', bob.id).single()
@@ -215,6 +225,8 @@ await test('jeton invalide refusé', async () => {
 })
 
 await test('un participant ne peut pas modifier la rétro ni s’auto-promouvoir', async () => {
+  const { data: asFac } = await bob.client.rpc('is_facilitator', { p_retro_id: retro.id })
+  assert(asFac === false, 'seuls les administrateurs animent')
   const { data } = await bob.client.from('retros').update({ status: 'open' }).eq('id', retro.id).select()
   assert(data.length === 0, 'mise à jour ignorée par RLS')
   const { error } = await bob.client.from('participants').update({ role: 'facilitator' }).eq('retro_id', retro.id).eq('user_id', bob.id)
@@ -287,11 +299,13 @@ await test('option « participants peuvent proposer des cartes » désactivée',
 })
 
 await test('vitrine : rétros ouvertes listées pour les personnes identifiées seulement', async () => {
-  const { data: forBob } = await bob.client.rpc('list_open_retros')
+  const { data: invBob } = await bob.client.from('retro_invites').select('*')
+  assert(invBob.length === 0, 'un participant ne voit pas le lien d’invitation')
+  const { data: forBob } = await bob.client.rpc('list_my_retros')
   assert(forBob.some((r) => r.retro_id === retro.id && r.joined), 'visible et rejointe pour Bob')
-  const { data: forEve } = await eve.client.rpc('list_open_retros')
+  const { data: forEve } = await eve.client.rpc('list_my_retros')
   assert(forEve.length === 0, 'rien pour un invité non identifié')
-  await expectError(eve.client.rpc('join_open_retro', { p_retro_id: retro.id }), 'Identifiez-vous')
+  await expectError(eve.client.rpc('join_open_retro', { p_retro_id: retro.id }), 'pas invité')
 })
 
 console.log('\nCommentaires')
@@ -434,9 +448,22 @@ await test('carte source d’une autre rétro refusée', async () => {
     alice.client.from('action_items').insert({ retro_id: other.id, team_id: other.team_id, title: 'x', source_card_id: ideaCard.id }),
     'même rétrospective',
   )
-  // Historique : Bob (membre de l'équipe) voit la nouvelle rétro en lecture seule.
+  // Cloisonnement : Bob (même équipe, non invité) ne voit pas cette rétro et ne peut pas la rejoindre.
   const { data: seen } = await bob.client.from('retros').select('id').eq('id', other.id)
-  assert(seen.length === 1, 'historique d’équipe visible')
+  assert(seen.length === 0, 'rétro non invitée invisible')
+  await expectError(bob.client.rpc('join_open_retro', { p_retro_id: other.id }), 'pas invité')
+  // Invitation nominative de Carol depuis l'annuaire.
+  const { data: carolMember } = await alice.client.from('members').select('id').eq('email', carolEmail).single()
+  const { error: invErr } = await alice.client.from('retro_member_invites').insert({ retro_id: other.id, member_id: carolMember.id })
+  if (invErr) throw invErr
+  await expectError(bob.client.from('retro_member_invites').insert({ retro_id: other.id, member_id: carolMember.id }))
+  await alice.client.from('retros').update({ status: 'open' }).eq('id', other.id)
+  const { data: carolList } = await carol.client.rpc('list_my_retros')
+  assert(carolList.some((r) => r.retro_id === other.id && !r.joined), 'rétro invitée listée pour Carol')
+  const { data: bobList } = await bob.client.rpc('list_my_retros')
+  assert(!bobList.some((r) => r.retro_id === other.id), 'rétro non listée pour Bob')
+  const { error: joinErr } = await carol.client.rpc('join_open_retro', { p_retro_id: other.id })
+  if (joinErr) throw joinErr
   await expectError(
     bob.client.rpc('create_card', { p_retro_id: other.id, p_category: 'positive', p_title: 'x', p_description: '', p_anonymous: false }),
     'rejoindre',

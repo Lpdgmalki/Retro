@@ -28,10 +28,10 @@ const NAV = [
 export function AppShell() {
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/85 backdrop-blur print:hidden">
+      <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-surface/85 backdrop-blur print:hidden">
         <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-4 px-4 sm:px-6 lg:px-8">
           <Logo />
-          <span className="hidden rounded-md bg-slate-900 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-white uppercase sm:inline">
+          <span className="hidden rounded-md bg-indigo-600 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-white uppercase sm:inline">
             Back office
           </span>
           <nav className="ml-2 hidden items-center gap-0.5 lg:flex" aria-label="Navigation principale">
@@ -66,7 +66,7 @@ export function AppShell() {
         <Outlet />
       </main>
       <nav
-        className="fixed inset-x-0 bottom-0 z-30 flex border-t border-slate-200 bg-white/95 backdrop-blur lg:hidden print:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 flex border-t border-slate-200 bg-surface/95 backdrop-blur lg:hidden print:hidden"
         aria-label="Navigation mobile"
       >
         {NAV.map((n) => (

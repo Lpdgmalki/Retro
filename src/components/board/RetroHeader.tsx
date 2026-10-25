@@ -82,9 +82,9 @@ export function RetroHeader({
           <div className="flex -space-x-2">
             {shown.map((p) => (
               <span key={p.user_id} className="relative">
-                <Avatar name={p.display_name} seed={p.user_id} src={p.photo_url} className="ring-2 ring-white" />
+                <Avatar name={p.display_name} seed={p.user_id} src={p.photo_url} className="ring-2 ring-surface" />
                 {online.has(p.user_id) && (
-                  <span className="absolute right-0 bottom-0 size-2 rounded-full bg-emerald-500 ring-2 ring-white" />
+                  <span className="absolute right-0 bottom-0 size-2 rounded-full bg-emerald-500 ring-2 ring-surface" />
                 )}
               </span>
             ))}
