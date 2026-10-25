@@ -1,4 +1,4 @@
-import { Link, Outlet } from 'react-router-dom'
+import { Link, Outlet, useLocation } from 'react-router-dom'
 import { LogOut, ShieldCheck } from 'lucide-react'
 import { Avatar } from '../ui/primitives'
 import { Menu } from '../ui/Menu'
@@ -22,6 +22,7 @@ export function BrandMark({ className = 'size-7' }: { className?: string }) {
 export function GuestShell() {
   const { member, forgetIdentity, isAdmin } = useAuth()
   const { settings } = useSettings()
+  const isHome = useLocation().pathname === '/'
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -31,7 +32,25 @@ export function GuestShell() {
             <BrandMark />
             <span className="text-[15px] tracking-tight">{settings.org_name}</span>
           </Link>
+          {isHome && (
+            <nav className="ml-6 hidden items-center gap-1 md:flex" aria-label="Sections">
+              {[
+                ['#fonctionnement', 'Fonctionnement'],
+                ['#avantages', 'Avantages'],
+                ['#faq', 'FAQ'],
+              ].map(([href, label]) => (
+                <a key={href} href={href} className="rounded-full px-3.5 py-1.5 text-sm font-medium text-slate-500 transition hover:bg-white/[0.05] hover:text-slate-900">
+                  {label}
+                </a>
+              ))}
+            </nav>
+          )}
           <div className="ml-auto flex items-center gap-2">
+            {isHome && !member && (
+              <a href="#acces" className="btn-glow hidden h-9 items-center rounded-full px-4.5 text-sm font-semibold text-white sm:inline-flex">
+                Accéder à mon espace
+              </a>
+            )}
             {isAdmin && (
               <Link to="/admin" className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm font-medium text-indigo-600 hover:bg-indigo-50">
                 <ShieldCheck className="size-4" /> Back office
@@ -58,11 +77,13 @@ export function GuestShell() {
       <main className="flex-1">
         <Outlet />
       </main>
-      <footer className="border-t border-slate-100 py-5 print:hidden">
-        <div className="mx-auto flex max-w-[1600px] items-center justify-between px-4 text-xs text-slate-400 sm:px-6 lg:px-8">
-          <span>
-            © {new Date().getFullYear()} {settings.org_name}
-          </span>
+      <footer className="border-t border-slate-200/70 py-8 print:hidden">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2.5">
+            <BrandMark className="size-6" />
+            <span className="font-semibold text-slate-800">{settings.org_name}</span>
+            <span className="text-slate-400">· © {new Date().getFullYear()}</span>
+          </div>
           {/* Accès discret au back office */}
           <Link to="/admin" className="text-slate-300 transition hover:text-slate-500" aria-label="Accès back office">
             Back office
