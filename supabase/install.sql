@@ -512,12 +512,22 @@ create policy action_items_update on public.action_items for update to authentic
 create policy action_items_delete on public.action_items for delete to authenticated
   using (public.is_facilitator(retro_id));
 
--- Privilèges : aucune écriture directe sur les tables gérées par RPC.
-revoke all on all tables in schema public from anon;
-revoke insert, update, delete on public.teams, public.team_members, public.card_owners, public.votes from authenticated;
+-- Privilèges explicites (ne dépendent pas des droits par défaut du projet, que Supabase
+-- n'accorde plus automatiquement sur les projets récents). Aucune écriture directe sur
+-- les tables gérées par RPC ; la RLS filtre ensuite chaque ligne.
+grant usage on schema public to anon, authenticated;
+revoke all on
+  public.teams, public.team_members, public.retros, public.participants, public.cards,
+  public.card_owners, public.comments, public.votes, public.action_items
+  from anon, authenticated;
+grant select on
+  public.teams, public.team_members, public.retros, public.participants, public.cards,
+  public.card_owners, public.comments, public.votes, public.action_items
+  to authenticated;
 grant update (name) on public.teams to authenticated;
 grant delete on public.team_members to authenticated;
-revoke insert on public.retros, public.participants, public.cards from authenticated;
+grant update, delete on public.retros, public.participants, public.cards to authenticated;
+grant insert, update, delete on public.comments, public.action_items to authenticated;
 
 -- -----------------------------------------------------------------------------
 -- RPC
@@ -767,7 +777,7 @@ language sql stable security definer set search_path = '' as $$
   group by p.user_id;
 $$;
 
-revoke execute on all functions in schema public from public, anon;
+revoke execute on all functions in schema public from public, anon, authenticated;
 grant execute on function
   public.create_retro(uuid, text, text, date, text, text, timestamptz, integer, boolean, boolean, boolean, text),
   public.preview_retro(text),
