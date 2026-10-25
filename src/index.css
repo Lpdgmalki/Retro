@@ -1,82 +1,40 @@
 @import 'tailwindcss';
 
 /*
- * Thème sombre « premium » (fond bleu nuit, bleu électrique, typographie affirmée).
- * La palette Tailwind est redéfinie : les classes existantes (slate, indigo, emerald…)
- * produisent automatiquement le rendu sombre. Les teintes 50-200 deviennent des fonds
- * sombres teintés, 700-900 des textes clairs ; 400-600 restent les couleurs vives.
- * Une version claire est rétablie pour l'impression (export PDF).
+ * Thème clair inspiré des plateformes fintech : fond blanc, titres noirs très gras et
+ * serrés, accent violet électrique, cartes blanches aux reflets colorés. Les grands blocs
+ * noirs arrondis (accroche, rapport) utilisent la classe .theme-dark, qui redéfinit
+ * localement la palette.
  */
 @theme {
   --font-sans: 'Plus Jakarta Sans Variable', 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
 
-  --color-surface: #101014;
-  --color-surface-2: #0b0b0e;
-  --color-canvas: #050506;
+  --color-surface: #ffffff;
+  --color-surface-2: #ffffff;
+  --color-canvas: #ffffff;
 
-  --color-slate-50: #0b0b0e;
-  --color-slate-100: #16161c;
-  --color-slate-200: #24242c;
-  --color-slate-300: #34343f;
-  --color-slate-400: #6e6e7c;
-  --color-slate-500: #9a9aa8;
-  --color-slate-600: #b6b6c2;
-  --color-slate-700: #d2d2da;
-  --color-slate-800: #ececf1;
-  --color-slate-900: #ffffff;
+  --color-slate-50: #f6f6f8;
+  --color-slate-100: #efeff3;
+  --color-slate-200: #e4e4ea;
+  --color-slate-300: #d0d0d9;
+  --color-slate-400: #9898a6;
+  --color-slate-500: #686876;
+  --color-slate-600: #4e4e5a;
+  --color-slate-700: #36363f;
+  --color-slate-800: #1d1d23;
+  --color-slate-900: #0a0a0c;
 
   /* Accent principal : violet électrique */
-  --color-indigo-50: #17143a;
-  --color-indigo-100: #1f1a52;
-  --color-indigo-200: #2e2780;
-  --color-indigo-300: #4237b8;
+  --color-indigo-50: #f0eeff;
+  --color-indigo-100: #e4e0ff;
+  --color-indigo-200: #cbc4ff;
+  --color-indigo-300: #a99fff;
   --color-indigo-400: #8b80fb;
   --color-indigo-500: #6d61f8;
   --color-indigo-600: #5b4cf5;
-  --color-indigo-700: #b4acff;
-  --color-indigo-800: #d0cbff;
-  --color-indigo-900: #ecebff;
-
-  --color-emerald-50: #0a231c;
-  --color-emerald-100: #0e3127;
-  --color-emerald-200: #15493a;
-  --color-emerald-300: #1f6b53;
-  --color-emerald-700: #5ee6a8;
-  --color-emerald-800: #93f0c4;
-
-  --color-rose-50: #2a0f19;
-  --color-rose-100: #3a1422;
-  --color-rose-200: #5a1d33;
-  --color-rose-300: #7d2847;
-  --color-rose-700: #ff8fab;
-  --color-rose-800: #ffb3c6;
-
-  --color-sky-50: #0a1f30;
-  --color-sky-100: #0e2c44;
-  --color-sky-200: #154264;
-  --color-sky-300: #1e5d8c;
-  --color-sky-700: #7dd3fc;
-  --color-sky-800: #a5e2fd;
-
-  --color-violet-50: #1a1233;
-  --color-violet-100: #241947;
-  --color-violet-200: #362570;
-  --color-violet-300: #4c349a;
-  --color-violet-700: #c4b5fd;
-  --color-violet-800: #ddd3fe;
-
-  --color-amber-50: #261c08;
-  --color-amber-100: #33260b;
-  --color-amber-200: #523d12;
-  --color-amber-300: #7a5a1a;
-  --color-amber-700: #fcd34d;
-  --color-amber-800: #fde68a;
-  --color-amber-900: #fef3c7;
-
-  --color-teal-100: #0d2e2e;
-  --color-teal-700: #5eead4;
-  --color-orange-100: #33200d;
-  --color-orange-700: #fdba74;
+  --color-indigo-700: #4637e0;
+  --color-indigo-800: #3a2cc4;
+  --color-indigo-900: #241a8a;
 
   --animate-fade-in: fade-in 150ms ease-out;
   --animate-pop-in: pop-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -120,18 +78,20 @@
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    color-scheme: dark;
+    color-scheme: light;
   }
   body {
     @apply text-slate-900;
-    background:
-      radial-gradient(1100px 520px at 12% -8%, rgb(91 76 245 / 0.16), transparent 70%),
-      var(--color-canvas);
-    background-attachment: fixed;
+    background: #ffffff;
     min-height: 100vh;
   }
-  h1, h2, h3 {
-    letter-spacing: -0.015em;
+  h1 {
+    letter-spacing: -0.04em;
+    font-weight: 700;
+  }
+  h2,
+  h3 {
+    letter-spacing: -0.025em;
   }
   ::selection {
     background: rgb(91 76 245 / 0.5);
@@ -143,7 +103,7 @@
   }
   input[type='date'],
   input[type='datetime-local'] {
-    color-scheme: dark;
+    color-scheme: light;
   }
   option {
     background: var(--color-surface);
@@ -169,14 +129,14 @@
   .btn-dark:hover {
     background: #1a1a1f;
   }
-  /* Carte : surface sombre, liseré lumineux discret en haut. */
+  /* Carte : surface blanche, ombre douce. */
   .card-premium {
-    background: linear-gradient(180deg, rgb(255 255 255 / 0.035), transparent 40%), var(--color-surface);
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 20px 50px -30px rgb(0 0 0 / 0.8);
+    background: var(--color-surface);
+    box-shadow: 0 1px 2px rgb(10 10 12 / 0.04), 0 12px 32px -18px rgb(10 10 12 / 0.18);
   }
   /* Texte en dégradé pour les grands titres. */
   .text-gradient {
-    background-image: linear-gradient(100deg, #ffffff 15%, #c9c3ff 60%, #8b80fb 100%);
+    background-image: linear-gradient(100deg, #0a0a0c 20%, #5b4cf5 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -184,8 +144,8 @@
   /* Trame de fond en grille. */
   .bg-grid {
     background-image:
-      linear-gradient(rgb(255 255 255 / 0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgb(255 255 255 / 0.04) 1px, transparent 1px);
+      linear-gradient(rgb(10 10 12 / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(10 10 12 / 0.05) 1px, transparent 1px);
     background-size: 44px 44px;
     mask-image: radial-gradient(ellipse at 50% 0%, black 30%, transparent 75%);
   }
@@ -216,25 +176,6 @@
   --color-indigo-300: #a99fff;
   --color-indigo-700: #4637e0;
   --color-indigo-800: #3a2cc4;
-  --color-emerald-50: #ecfdf5;
-  --color-emerald-100: #d1fae5;
-  --color-emerald-200: #a7f3d0;
-  --color-emerald-700: #047857;
-  --color-rose-50: #fff1f2;
-  --color-rose-100: #ffe4e6;
-  --color-rose-200: #fecdd3;
-  --color-rose-700: #be123c;
-  --color-sky-50: #f0f9ff;
-  --color-sky-100: #e0f2fe;
-  --color-sky-200: #bae6fd;
-  --color-sky-700: #0369a1;
-  --color-violet-50: #f5f3ff;
-  --color-violet-100: #ede9fe;
-  --color-violet-200: #ddd6fe;
-  --color-violet-700: #6d28d9;
-  --color-amber-50: #fffbeb;
-  --color-amber-200: #fde68a;
-  --color-amber-700: #b45309;
   background: #ffffff;
   color: var(--color-slate-900);
 }
@@ -270,18 +211,45 @@
   --color-indigo-100: #1f1a52;
   --color-indigo-200: #2e2780;
   --color-indigo-300: #4237b8;
+  --color-indigo-400: #8b80fb;
   --color-indigo-700: #b4acff;
   --color-indigo-800: #d0cbff;
   --color-emerald-50: #0a231c;
+  --color-emerald-100: #0e3127;
+  --color-emerald-200: #15493a;
   --color-emerald-700: #5ee6a8;
   --color-rose-50: #2a0f19;
+  --color-rose-100: #3a1422;
+  --color-rose-200: #5a1d33;
   --color-rose-700: #ff8fab;
   --color-sky-50: #0a1f30;
+  --color-sky-100: #0e2c44;
+  --color-sky-200: #154264;
   --color-sky-700: #7dd3fc;
   --color-violet-50: #1a1233;
+  --color-violet-100: #241947;
+  --color-violet-200: #362570;
   --color-violet-700: #c4b5fd;
+  --color-amber-50: #261c08;
+  --color-amber-200: #523d12;
+  --color-amber-700: #fcd34d;
+  --color-amber-800: #fde68a;
+  --color-amber-100: #33260b;
+  --color-teal-100: #0d2e2e;
+  --color-teal-700: #5eead4;
+  --color-orange-100: #33200d;
+  --color-orange-700: #fdba74;
   background: #000000;
   color: #ffffff;
+}
+.theme-dark .card-premium {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.035), transparent 40%), var(--color-surface);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 20px 50px -30px rgb(0 0 0 / 0.8);
+}
+.theme-dark .bg-grid {
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.04) 1px, transparent 1px);
 }
 .theme-dark .text-gradient {
   background-image: linear-gradient(100deg, #ffffff 15%, #c9c3ff 60%, #8b80fb 100%);
@@ -301,7 +269,8 @@
   @page {
     margin: 14mm;
   }
-  :root {
+  :root,
+  .theme-dark {
     color-scheme: light;
     --color-surface: #ffffff;
     --color-surface-2: #ffffff;
@@ -320,22 +289,7 @@
     --color-indigo-100: #e0e7ff;
     --color-indigo-200: #c7d2fe;
     --color-indigo-700: #1d4ed8;
-    --color-emerald-50: #ecfdf5;
-    --color-emerald-200: #a7f3d0;
-    --color-emerald-700: #047857;
-    --color-rose-50: #fff1f2;
-    --color-rose-200: #fecdd3;
-    --color-rose-700: #be123c;
-    --color-sky-50: #f0f9ff;
-    --color-sky-200: #bae6fd;
-    --color-sky-700: #0369a1;
-    --color-violet-50: #f5f3ff;
-    --color-violet-200: #ddd6fe;
-    --color-violet-700: #6d28d9;
-    --color-amber-50: #fffbeb;
-    --color-amber-200: #fde68a;
-    --color-amber-800: #92400e;
-  }
+                                }
   body {
     background: white !important;
   }
@@ -346,11 +300,17 @@
     opacity: 1 !important;
     transform: none !important;
   }
-  .card-premium {
+  .theme-dark {
+    background: white !important;
+    color: #0f172a;
+  }
+  .card-premium,
+  .theme-dark .card-premium {
     background: white;
     box-shadow: none;
   }
-  .text-gradient {
+  .text-gradient,
+  .theme-dark .text-gradient {
     color: #0f172a;
     background: none;
   }

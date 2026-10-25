@@ -12,7 +12,7 @@ type Size = 'sm' | 'md' | 'lg' | 'icon' | 'icon-sm'
 const VARIANTS: Record<Variant, string> = {
   primary: 'btn-glow text-white disabled:opacity-50 disabled:shadow-none',
   secondary:
-    'bg-white/[0.04] text-slate-800 ring-1 ring-inset ring-slate-300/70 hover:bg-white/[0.08] hover:text-slate-900 hover:ring-slate-400/60 disabled:text-slate-400',
+    'bg-surface text-slate-800 ring-1 ring-inset ring-slate-200 shadow-[0_1px_2px_rgb(10_10_12/0.05)] hover:bg-slate-50 hover:text-slate-900 hover:ring-slate-300 disabled:text-slate-400',
   ghost: 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 disabled:text-slate-300',
   subtle: 'bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:text-slate-400',
   danger: 'bg-rose-600 text-white shadow-[0_8px_24px_-10px_rgb(225_29_72/0.8)] hover:bg-rose-500 disabled:opacity-50',
@@ -56,7 +56,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
 })
 
 const fieldBase =
-  'block w-full rounded-xl border-0 bg-surface-2 px-3.5 text-sm text-slate-900 ring-1 ring-inset ring-slate-300/70 placeholder:text-slate-400 transition focus:ring-2 focus:ring-inset focus:ring-indigo-500 focus:outline-none disabled:bg-slate-50 disabled:text-slate-500'
+  'block w-full rounded-xl border-0 bg-surface-2 px-3.5 text-sm text-slate-900 ring-1 ring-inset ring-slate-200 placeholder:text-slate-400 transition focus:ring-2 focus:ring-inset focus:ring-indigo-500 focus:outline-none disabled:bg-slate-50 disabled:text-slate-500'
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement> & { invalid?: boolean }>(
   function Input({ className, invalid, ...rest }, ref) {

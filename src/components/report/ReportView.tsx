@@ -77,7 +77,8 @@ export function ReportView({ board }: { board: Board }) {
   ]
 
   return (
-    <div className="relative overflow-hidden pb-20">
+    <div className="px-2 pt-2 pb-6 sm:px-4 lg:px-5 print:p-0">
+    <div className="theme-dark relative overflow-hidden rounded-[28px] pb-20 sm:rounded-[40px] print:rounded-none">
       {/* Halo et trame */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[640px] bg-grid print:hidden" aria-hidden />
       <div className="animate-glow pointer-events-none absolute top-[-180px] left-1/2 h-[520px] w-[900px] -translate-x-1/2 rounded-full bg-indigo-600/25 blur-[120px] print:hidden" aria-hidden />
@@ -306,6 +307,7 @@ export function ReportView({ board }: { board: Board }) {
           <p className="text-xs text-slate-500">Rapport établi le {formatDate(retro.updated_at)} · {retro.teams?.name}</p>
         </footer>
       </div>
+    </div>
     </div>
   )
 }
