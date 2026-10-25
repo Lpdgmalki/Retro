@@ -1,0 +1,74 @@
+import { Link, Outlet } from 'react-router-dom'
+import { LogOut, ShieldCheck } from 'lucide-react'
+import { Avatar } from '../ui/primitives'
+import { Menu } from '../ui/Menu'
+import { useAuth } from '../../context/AuthContext'
+import { useSettings } from '../../context/SettingsContext'
+import { memberDisplayName } from '../../lib/members'
+
+export function BrandMark({ className = 'size-7' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden>
+      <rect width="32" height="32" rx="8" fill="#4f46e5" />
+      <rect x="7" y="8" width="7" height="7" rx="2" fill="#86efac" />
+      <rect x="18" y="8" width="7" height="7" rx="2" fill="#fda4af" />
+      <rect x="7" y="18" width="7" height="7" rx="2" fill="#93c5fd" />
+      <rect x="18" y="18" width="7" height="7" rx="2" fill="#d8b4fe" />
+    </svg>
+  )
+}
+
+/** Mise en page du site vitrine (invités) : en-tête sobre, lien discret vers le back office. */
+export function GuestShell() {
+  const { member, forgetIdentity, isAdmin } = useAuth()
+  const { settings } = useSettings()
+
+  return (
+    <div className="flex min-h-screen flex-col">
+      <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/85 backdrop-blur print:hidden">
+        <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-3 px-4 sm:px-6 lg:px-8">
+          <Link to="/" className="flex items-center gap-2 font-semibold text-slate-900">
+            <BrandMark />
+            <span className="text-[15px] tracking-tight">{settings.org_name}</span>
+          </Link>
+          <div className="ml-auto flex items-center gap-2">
+            {isAdmin && (
+              <Link to="/admin" className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm font-medium text-indigo-600 hover:bg-indigo-50">
+                <ShieldCheck className="size-4" /> Back office
+              </Link>
+            )}
+            {member && (
+              <Menu
+                label="Mon identité"
+                items={[{ label: 'Changer d’identité', icon: <LogOut className="size-4" />, onSelect: () => forgetIdentity() }]}
+                trigger={(p) => (
+                  <button {...p} className="flex items-center gap-2 rounded-full py-0.5 pr-3 pl-0.5 hover:bg-slate-100">
+                    <Avatar name={memberDisplayName(member)} seed={member.id} src={member.photo_url} />
+                    <span className="hidden text-left sm:block">
+                      <span className="block text-sm leading-tight font-medium text-slate-800">{memberDisplayName(member)}</span>
+                      {member.job_title && <span className="block text-xs leading-tight text-slate-500">{member.job_title}</span>}
+                    </span>
+                  </button>
+                )}
+              />
+            )}
+          </div>
+        </div>
+      </header>
+      <main className="flex-1">
+        <Outlet />
+      </main>
+      <footer className="border-t border-slate-100 py-5 print:hidden">
+        <div className="mx-auto flex max-w-[1600px] items-center justify-between px-4 text-xs text-slate-400 sm:px-6 lg:px-8">
+          <span>
+            © {new Date().getFullYear()} {settings.org_name}
+          </span>
+          {/* Accès discret au back office */}
+          <Link to="/admin" className="text-slate-300 transition hover:text-slate-500" aria-label="Accès back office">
+            Back office
+          </Link>
+        </div>
+      </footer>
+    </div>
+  )
+}

@@ -68,7 +68,7 @@ export function ParticipantsDialog({
             return (
               <li key={p.user_id} className="flex items-center gap-3 px-2 py-2.5">
                 <div className="relative">
-                  <Avatar name={p.display_name} seed={p.user_id} />
+                  <Avatar name={p.display_name} seed={p.user_id} src={p.photo_url} />
                   <span
                     className={cx(
                       'absolute -right-0.5 -bottom-0.5 size-2.5 rounded-full ring-2 ring-white',
@@ -97,6 +97,7 @@ export function ParticipantsDialog({
                       {isMe && <span className="font-normal text-slate-400"> (vous)</span>}
                     </p>
                   )}
+                  {p.job_title && <p className="truncate text-xs text-slate-500">{p.job_title}</p>}
                   {showUsage && (
                     <p className="text-xs text-slate-500">
                       {used}/{retro.max_votes} votes utilisés
@@ -108,7 +109,7 @@ export function ParticipantsDialog({
                     <Crown className="size-3" /> Facilitateur
                   </Badge>
                 )}
-                {isMe && !renaming && (
+                {isMe && !renaming && !p.member_id && (
                   <Button
                     variant="ghost"
                     size="icon-sm"

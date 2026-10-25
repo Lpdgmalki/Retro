@@ -2,8 +2,12 @@
 -- si celle-ci a déjà été exécutée en tout ou partie). Supprime uniquement les objets de l'application.
 drop policy if exists retro_presence_read on realtime.messages;
 drop policy if exists retro_presence_write on realtime.messages;
+drop policy if exists member_photos_insert on storage.objects;
+drop policy if exists member_photos_update on storage.objects;
+drop policy if exists member_photos_delete on storage.objects;
 
 drop table if exists
+  public.member_sessions, public.members, public.app_settings, public.app_admins,
   public.action_items, public.votes, public.comments, public.card_owners,
   public.cards, public.participants, public.retros, public.team_members, public.teams
   cascade;
@@ -20,7 +24,10 @@ begin
         'contributions_open', 'discussion_open', 'is_card_owner', 'touch_updated_at', 'retros_guard',
         'participants_guard', 'cards_guard', 'comments_guard', 'action_items_guard', 'create_retro',
         'preview_retro', 'join_retro', 'create_card', 'cast_vote', 'remove_vote', 'get_vote_totals',
-        'get_vote_usage', 'duplicate_retro'
+        'get_vote_usage', 'duplicate_retro', 'is_admin', 'has_admin', 'claim_first_admin',
+        'list_admins', 'add_admin', 'remove_admin', 'member_display_name', 'suggest_members',
+        'identify_member', 'my_member', 'forget_identity', 'join_retro_internal',
+        'join_open_retro', 'list_open_retros'
       )
   loop
     execute format('drop function if exists %s cascade', f.sig);

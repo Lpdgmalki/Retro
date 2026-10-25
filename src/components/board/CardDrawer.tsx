@@ -56,7 +56,7 @@ export function CardDrawer({
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5">
-                <Avatar name={author} seed={card.author_id ?? ''} size="xs" /> {author}
+                <Avatar name={author} seed={card.author_id ?? ''} src={board.photoOf.get(card.author_id ?? '')} size="xs" /> {author}
               </span>
             )}
             <span>·</span>

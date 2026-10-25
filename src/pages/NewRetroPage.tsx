@@ -4,6 +4,7 @@ import { ArrowLeft, Copy } from 'lucide-react'
 import { Button, Card, Field, Input, PageLoader, Select } from '../components/ui/primitives'
 import { RetroInfoFields, RetroVoteFields, validateRetroSettings, type RetroSettingsValues } from '../components/board/RetroSettingsFields'
 import { useAuth } from '../context/AuthContext'
+import { useSettings } from '../context/SettingsContext'
 import { useToast } from '../context/ToastContext'
 import { useMyRetros } from '../hooks/useMyRetros'
 import { supabase } from '../lib/supabase'
@@ -20,6 +21,7 @@ function nextSprintName(name: string): string {
 
 export function NewRetroPage() {
   const { user, displayName, setDisplayName } = useAuth()
+  const { settings } = useSettings()
   const toast = useToast()
   const navigate = useNavigate()
   const [params] = useSearchParams()
@@ -35,10 +37,11 @@ export function NewRetroPage() {
     facilitator_name: displayName,
     goal: '',
     closes_at: '',
-    max_votes: 5,
-    allow_multiple_votes: false,
-    confidential_votes: false,
-    allow_anonymous: true,
+    max_votes: settings.default_max_votes,
+    allow_multiple_votes: settings.default_allow_multiple_votes,
+    confidential_votes: settings.default_confidential_votes,
+    allow_anonymous: settings.default_allow_anonymous,
+    participants_can_add: settings.default_participants_can_add,
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [saving, setSaving] = useState(false)
@@ -67,6 +70,7 @@ export function NewRetroPage() {
             allow_multiple_votes: r.allow_multiple_votes,
             confidential_votes: r.confidential_votes,
             allow_anonymous: r.allow_anonymous,
+            participants_can_add: r.participants_can_add,
           }))
         }
         setSourceLoading(false)
@@ -110,6 +114,7 @@ export function NewRetroPage() {
         p_allow_multiple_votes: values.allow_multiple_votes,
         p_confidential_votes: values.confidential_votes,
         p_allow_anonymous: values.allow_anonymous,
+        p_participants_can_add: values.participants_can_add,
         p_display_name: pseudo,
       })
       if (error) throw error
@@ -126,7 +131,7 @@ export function NewRetroPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
-      <Link to="/" className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800">
+      <Link to="/admin" className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800">
         <ArrowLeft className="size-4" /> Retour
       </Link>
       <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900">Nouvelle rétrospective</h1>
@@ -197,7 +202,7 @@ export function NewRetroPage() {
         </Card>
 
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Link to="/">
+          <Link to="/admin">
             <Button variant="secondary" className="w-full sm:w-auto">
               Annuler
             </Button>

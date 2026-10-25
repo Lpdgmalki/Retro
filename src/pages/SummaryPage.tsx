@@ -21,8 +21,8 @@ import type { ActionItem, Card as RetroCard } from '../lib/types'
 
 export function SummaryPage() {
   const { id } = useParams()
-  const { user } = useAuth()
-  const board = useRetroBoard(id, user?.id)
+  const { user, isAdmin } = useAuth()
+  const board = useRetroBoard(id, user?.id, isAdmin)
   return (
     <RetroGate board={board}>
       <SummaryView board={board} />

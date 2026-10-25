@@ -2,6 +2,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import type { User } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import { errorMessage } from '../lib/errors'
+import { memberDisplayName } from '../lib/members'
+import type { MemberProfile } from '../lib/types'
 
 const NAME_KEY = 'retro.displayName'
 
@@ -9,14 +11,22 @@ interface AuthState {
   user: User | null
   loading: boolean
   error: string | null
+  /** Nom affiché : identité annuaire, sinon pseudo mémorisé. */
   displayName: string
   isAnonymous: boolean
+  /** Administrateur du back office. */
+  isAdmin: boolean
+  /** Fiche annuaire associée à ce navigateur (invité identifié). */
+  member: MemberProfile | null
+  rolesLoading: boolean
   setDisplayName: (name: string) => void
-  /** Envoie un lien magique de connexion (compte existant ou nouveau). */
-  signInWithEmail: (email: string) => Promise<void>
-  /** Associe un e-mail à l'identité invitée actuelle (conserve l'historique). */
-  linkEmail: (email: string) => Promise<void>
+  identify: (email: string) => Promise<MemberProfile>
+  forgetIdentity: () => Promise<void>
+  signInWithPassword: (email: string, password: string) => Promise<void>
+  /** Crée un compte e-mail ; renvoie true si une confirmation par e-mail est nécessaire. */
+  signUpWithPassword: (email: string, password: string) => Promise<boolean>
   signOut: () => Promise<void>
+  refreshRoles: () => Promise<void>
   retry: () => void
 }
 
@@ -34,8 +44,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [displayName, setDisplayNameState] = useState(readStoredName)
+  const [storedName, setStoredName] = useState(readStoredName)
   const [attempt, setAttempt] = useState(0)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [member, setMember] = useState<MemberProfile | null>(null)
+  const [rolesLoading, setRolesLoading] = useState(true)
 
   useEffect(() => {
     let cancelled = false
@@ -70,42 +83,70 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [attempt])
 
-  // Récupère le nom enregistré dans le profil si le navigateur n'en a pas.
+  const refreshRoles = useCallback(async () => {
+    setRolesLoading(true)
+    const [admin, me] = await Promise.all([supabase.rpc('is_admin'), supabase.rpc('my_member')])
+    setIsAdmin(Boolean(admin.data))
+    setMember(((me.data as MemberProfile[] | null) ?? [])[0] ?? null)
+    setRolesLoading(false)
+  }, [])
+
+  const userId = user?.id
   useEffect(() => {
-    const metaName = (user?.user_metadata?.display_name as string | undefined) ?? ''
-    if (!displayName && metaName) setDisplayNameState(metaName)
-  }, [user, displayName])
+    if (userId) refreshRoles()
+  }, [userId, refreshRoles])
 
   const setDisplayName = useCallback((name: string) => {
     const clean = name.trim()
-    setDisplayNameState(clean)
+    setStoredName(clean)
     try {
       localStorage.setItem(NAME_KEY, clean)
     } catch {
       /* stockage indisponible : le nom reste en mémoire */
     }
-    supabase.auth.updateUser({ data: { display_name: clean } }).catch(() => {})
   }, [])
 
-  const signInWithEmail = useCallback(async (email: string) => {
-    const { error: err } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: window.location.origin + window.location.pathname },
-    })
+  const identify = useCallback(async (email: string) => {
+    const { data, error: err } = await supabase.rpc('identify_member', { p_email: email })
     if (err) throw err
+    const m = data as MemberProfile
+    setMember(m)
+    return m
   }, [])
 
-  const linkEmail = useCallback(async (email: string) => {
-    const { error: err } = await supabase.auth.updateUser(
-      { email },
-      { emailRedirectTo: window.location.origin + window.location.pathname },
-    )
-    if (err) throw err
+  const forgetIdentity = useCallback(async () => {
+    await supabase.rpc('forget_identity')
+    setMember(null)
   }, [])
+
+  const signInWithPassword = useCallback(
+    async (email: string, password: string) => {
+      const { error: err } = await supabase.auth.signInWithPassword({ email, password })
+      if (err) throw err
+      await refreshRoles()
+    },
+    [refreshRoles],
+  )
+
+  const signUpWithPassword = useCallback(
+    async (email: string, password: string) => {
+      const { data, error: err } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: `${window.location.origin}/admin/login` },
+      })
+      if (err) throw err
+      if (data.session) await refreshRoles()
+      return !data.session
+    },
+    [refreshRoles],
+  )
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut()
     setUser(null)
+    setIsAdmin(false)
+    setMember(null)
     setAttempt((a) => a + 1)
   }, [])
 
@@ -114,15 +155,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       loading,
       error,
-      displayName,
+      displayName: member ? memberDisplayName(member) : storedName,
       isAnonymous: Boolean(user?.is_anonymous),
+      isAdmin,
+      member,
+      rolesLoading,
       setDisplayName,
-      signInWithEmail,
-      linkEmail,
+      identify,
+      forgetIdentity,
+      signInWithPassword,
+      signUpWithPassword,
       signOut,
+      refreshRoles,
       retry: () => setAttempt((a) => a + 1),
     }),
-    [user, loading, error, displayName, setDisplayName, signInWithEmail, linkEmail, signOut],
+    [user, loading, error, member, storedName, isAdmin, rolesLoading, setDisplayName, identify, forgetIdentity, signInWithPassword, signUpWithPassword, signOut, refreshRoles],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
@@ -132,4 +179,9 @@ export function useAuth(): AuthState {
   const ctx = useContext(AuthContext)
   if (!ctx) throw new Error('useAuth doit être utilisé dans <AuthProvider>')
   return ctx
+}
+
+/** Page d'accueil selon le profil : back office pour les administrateurs, vitrine sinon. */
+export function useHomePath(): string {
+  return useAuth().isAdmin ? '/admin' : '/'
 }

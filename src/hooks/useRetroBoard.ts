@@ -151,7 +151,7 @@ export interface CardDraft {
   anonymous: boolean
 }
 
-export function useRetroBoard(retroId: string | undefined, userId: string | undefined) {
+export function useRetroBoard(retroId: string | undefined, userId: string | undefined, isAdmin = false) {
   const [state, dispatch] = useReducer(reducer, EMPTY)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -169,7 +169,12 @@ export function useRetroBoard(retroId: string | undefined, userId: string | unde
     let cancelled = false
     ;(async () => {
       try {
-        const data = await fetchBoard(retroId)
+        let data = await fetchBoard(retroId)
+        // Un administrateur qui ouvre une rétro rejoint automatiquement la session comme facilitateur.
+        if (data && isAdmin && !data.participants.some((p) => p.user_id === userId)) {
+          const { error: joinErr } = await supabase.rpc('join_open_retro', { p_retro_id: retroId })
+          if (!joinErr) data = await fetchBoard(retroId)
+        }
         if (cancelled) return
         if (!data) {
           setNotFound(true)
@@ -187,7 +192,7 @@ export function useRetroBoard(retroId: string | undefined, userId: string | unde
     return () => {
       cancelled = true
     }
-  }, [retroId, userId, reloadKey])
+  }, [retroId, userId, isAdmin, reloadKey])
 
   const refreshUsage = useCallback(async () => {
     if (!retroId) return
@@ -328,7 +333,7 @@ export function useRetroBoard(retroId: string | undefined, userId: string | unde
   const derived = useMemo(() => {
     const retro = state.retro
     const me = state.participants.find((p) => p.user_id === userId) ?? null
-    const isFacilitator = me?.role === 'facilitator'
+    const isFacilitator = me?.role === 'facilitator' || (isAdmin && Boolean(me))
     const myVotes = new Map<string, number>()
     let myVotesUsed = 0
     for (const v of state.votes) {
@@ -357,6 +362,7 @@ export function useRetroBoard(retroId: string | undefined, userId: string | unde
     }
 
     const nameOf = new Map(state.participants.map((p) => [p.user_id, p.display_name]))
+    const photoOf = new Map(state.participants.filter((p) => p.photo_url).map((p) => [p.user_id, p.photo_url]))
     const commentCount = new Map<string, number>()
     for (const c of state.comments) {
       if (!c.is_deleted) commentCount.set(c.card_id, (commentCount.get(c.card_id) ?? 0) + 1)
@@ -373,7 +379,7 @@ export function useRetroBoard(retroId: string | undefined, userId: string | unde
     const canContribute =
       Boolean(me) &&
       Boolean(retro) &&
-      ((retro!.status === 'open' && !closesPassed) || (isFacilitator && retro!.status !== 'closed'))
+      ((retro!.status === 'open' && !closesPassed && retro!.participants_can_add) || (isFacilitator && retro!.status !== 'closed'))
     const canDiscuss = Boolean(me) && Boolean(retro) && ['open', 'voting'].includes(retro!.status) && !closesPassed
     const canVote = Boolean(me) && retro?.status === 'voting'
 
@@ -386,6 +392,7 @@ export function useRetroBoard(retroId: string | undefined, userId: string | unde
       voteTotals,
       votersByCard,
       nameOf,
+      photoOf,
       commentCount,
       ranking,
       closesPassed,
@@ -393,7 +400,7 @@ export function useRetroBoard(retroId: string | undefined, userId: string | unde
       canDiscuss,
       canVote,
     }
-  }, [state, userId])
+  }, [state, userId, isAdmin])
 
   // ---------------------------------------------------------------------------
   // Mutations (mise à jour locale immédiate à partir de la réponse serveur)

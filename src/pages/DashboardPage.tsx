@@ -55,7 +55,7 @@ export function DashboardPage() {
             transformez-les en actions suivies.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            <Link to="/new">
+            <Link to="/admin/new">
               <Button size="lg">
                 <Plus className="size-4" /> Créer ma première rétrospective
               </Button>
@@ -86,7 +86,7 @@ export function DashboardPage() {
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">{hello}</h1>
           <p className="mt-1 text-sm text-slate-500">Vos rétrospectives et le suivi des actions de vos équipes.</p>
         </div>
-        <Link to="/new">
+        <Link to="/admin/new">
           <Button>
             <Plus className="size-4" /> Nouvelle rétrospective
           </Button>
@@ -152,14 +152,14 @@ export function DashboardPage() {
             <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
               <History className="size-4 text-slate-400" /> Rétrospectives récentes
             </h2>
-            <Link to="/retros" className="text-xs font-medium text-indigo-600 hover:text-indigo-700">
+            <Link to="/admin/retros" className="text-xs font-medium text-indigo-600 hover:text-indigo-700">
               Tout voir
             </Link>
           </div>
           <Card className="overflow-hidden">
             <ul className="divide-y divide-slate-100">
               {recent.map((r) => (
-                <RetroRow key={r.id} retro={r} onDuplicate={(x) => navigate(`/new?from=${x.id}`)} />
+                <RetroRow key={r.id} retro={r} onDuplicate={(x) => navigate(`/admin/new?from=${x.id}`)} />
               ))}
             </ul>
           </Card>
@@ -170,7 +170,7 @@ export function DashboardPage() {
             <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
               <Sparkles className="size-4 text-slate-400" /> Actions à suivre
             </h2>
-            <Link to="/actions" className="text-xs font-medium text-indigo-600 hover:text-indigo-700">
+            <Link to="/admin/actions" className="text-xs font-medium text-indigo-600 hover:text-indigo-700">
               Tout voir
             </Link>
           </div>

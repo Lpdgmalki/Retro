@@ -129,7 +129,7 @@ function RetroCardInner({ board, card, rank, onOpen, onConvert }: Props) {
               <EyeOff className="size-3" />
             </span>
           ) : (
-            <Avatar name={authorName} seed={card.author_id ?? ''} size="xs" />
+            <Avatar name={authorName} seed={card.author_id ?? ''} src={board.photoOf.get(card.author_id ?? '')} size="xs" />
           )}
           <span className="truncate">
             {authorName}

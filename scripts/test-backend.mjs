@@ -1,6 +1,8 @@
-// Tests d'intégration du backend Supabase (RLS, RPC, votes, temps réel).
+// Tests d'intégration du backend Supabase (RLS, RPC, votes, temps réel, back office).
 // Usage : SUPABASE_URL=... SUPABASE_ANON_KEY=... node scripts/test-backend.mjs
 // Par défaut : instance locale lancée par `npx supabase start`.
+// Compte administrateur : TEST_ADMIN_EMAIL / TEST_ADMIN_PASSWORD (créé et promu premier
+// administrateur s'il n'en existe aucun — cas d'une base locale neuve).
 import { createClient } from '@supabase/supabase-js'
 import { readFileSync } from 'node:fs'
 
@@ -63,10 +65,88 @@ async function newUser() {
   return { client, id: data.user.id }
 }
 
-const alice = await newUser() // facilitatrice
-const bob = await newUser() // participant
-const carol = await newUser() // participante
-const eve = await newUser() // extérieure, sans lien
+async function adminUser() {
+  const email = process.env.TEST_ADMIN_EMAIL ?? 'admin@retro.test'
+  const password = process.env.TEST_ADMIN_PASSWORD ?? 'Test-Admin-2026!'
+  const client = createClient(URL_, KEY, { auth: { persistSession: false, autoRefreshToken: false } })
+  let { data, error } = await client.auth.signInWithPassword({ email, password })
+  if (error) {
+    ;({ data, error } = await client.auth.signUp({ email, password }))
+    if (error) throw error
+  }
+  const { data: hasAdmin } = await client.rpc('has_admin')
+  if (!hasAdmin) {
+    const r = await client.rpc('claim_first_admin')
+    if (r.error) throw r.error
+  }
+  const { data: isAdmin } = await client.rpc('is_admin')
+  if (!isAdmin) throw new Error(`${email} n'est pas administrateur (définissez TEST_ADMIN_EMAIL/TEST_ADMIN_PASSWORD)`)
+  return { client, id: data.user.id }
+}
+
+const alice = await adminUser() // administratrice et facilitatrice
+const bob = await newUser() // participant (annuaire)
+const carol = await newUser() // participante (annuaire)
+const eve = await newUser() // extérieure, sans lien ni identité
+const stamp = Date.now().toString(36)
+const bobEmail = `bob.${stamp}@retro.test`
+const carolEmail = `carol.${stamp}@retro.test`
+const createdMembers = []
+
+console.log('\nBack office et annuaire')
+await test('un invité ne peut pas devenir administrateur ni créer de rétro', async () => {
+  await expectError(eve.client.rpc('claim_first_admin'), 'compte e-mail|existe déjà')
+  const { data } = await eve.client.rpc('is_admin')
+  assert(data === false, 'pas administrateur')
+  await expectError(
+    eve.client.rpc('create_retro', {
+      p_team_id: null, p_team_name: 'X', p_sprint_name: 'S', p_retro_date: null, p_facilitator_name: 'E',
+      p_goal: '', p_closes_at: null, p_max_votes: 5, p_allow_multiple_votes: false, p_confidential_votes: false,
+      p_allow_anonymous: true, p_participants_can_add: true, p_display_name: 'E',
+    }),
+    'administrateurs',
+  )
+})
+
+await test('l’administrateur gère l’annuaire ; les invités n’y ont pas accès', async () => {
+  const { data, error } = await alice.client
+    .from('members')
+    .insert([
+      { email: bobEmail, civility: 'M.', first_name: 'Bob', last_name: 'Martin', job_title: 'Développeur' },
+      { email: carolEmail, civility: 'Mme', first_name: 'Carol', last_name: 'Durand', job_title: 'Product Owner' },
+    ])
+    .select()
+  if (error) throw error
+  createdMembers.push(...data.map((m) => m.id))
+  const { data: seen } = await eve.client.from('members').select('*')
+  assert(seen.length === 0, 'annuaire invisible pour un invité')
+  await expectError(eve.client.from('members').insert({ email: `x.${stamp}@retro.test` }))
+  await expectError(alice.client.from('members').insert({ email: bobEmail.toUpperCase() }), 'duplicate|unique')
+})
+
+await test('paramètres modifiables uniquement par l’administrateur', async () => {
+  const { data: s } = await eve.client.from('app_settings').select('*').single()
+  assert(s.org_name, 'paramètres lisibles')
+  const { data: upd } = await eve.client.from('app_settings').update({ org_name: 'Piraté' }).eq('id', 1).select()
+  assert(upd.length === 0, 'modification refusée')
+  const { data: ok, error } = await alice.client.from('app_settings').update({ allow_external_guests: false }).eq('id', 1).select()
+  if (error) throw error
+  assert(ok.length === 1, 'modification par l’admin')
+})
+
+await test('suggestions d’e-mails et identification', async () => {
+  const { data: none } = await bob.client.rpc('suggest_members', { p_query: 'b' })
+  assert(none.length === 0, 'au moins 2 caractères')
+  const { data: sugg } = await bob.client.rpc('suggest_members', { p_query: `bob.${stamp}` })
+  assert(sugg.length === 1 && sugg[0].job_title === 'Développeur' && sugg[0].civility === 'M.', 'suggestion trouvée')
+  await expectError(eve.client.rpc('identify_member', { p_email: 'inconnu@nulle-part.test' }), 'inconnue')
+  const { data: me, error } = await bob.client.rpc('identify_member', { p_email: bobEmail })
+  if (error) throw error
+  assert(me.first_name === 'Bob', 'identité renvoyée')
+  await carol.client.rpc('identify_member', { p_email: carolEmail })
+  const { data: mine } = await bob.client.rpc('my_member')
+  assert(mine.length === 1 && mine[0].email === bobEmail, 'identité mémorisée')
+})
 
 console.log('\nCréation et partage')
 let retro
@@ -83,6 +163,7 @@ await test('create_retro crée la rétro, l’équipe et le facilitateur', async
     p_allow_multiple_votes: false,
     p_confidential_votes: false,
     p_allow_anonymous: true,
+    p_participants_can_add: true,
     p_display_name: 'Alice',
   })
   if (error) throw error
@@ -96,7 +177,7 @@ await test('validation : sprint vide refusé', async () => {
     alice.client.rpc('create_retro', {
       p_team_id: null, p_team_name: 'X', p_sprint_name: '  ', p_retro_date: null, p_facilitator_name: 'A',
       p_goal: '', p_closes_at: null, p_max_votes: 5, p_allow_multiple_votes: false, p_confidential_votes: false,
-      p_allow_anonymous: true, p_display_name: 'A',
+      p_allow_anonymous: true, p_participants_can_add: true, p_display_name: 'A',
     }),
     'check',
   )
@@ -112,7 +193,11 @@ await test('un extérieur ne peut pas lire cartes ni participants', async () => 
   assert(p.length === 0, 'participants invisibles')
 })
 
-await test('aperçu par jeton puis adhésion', async () => {
+await test('sans identité annuaire, impossible de rejoindre', async () => {
+  await expectError(eve.client.rpc('join_retro', { p_token: retro.share_token, p_display_name: 'Eve' }), 'Identifiez-vous')
+})
+
+await test('aperçu par jeton puis adhésion (identité annuaire)', async () => {
   const { data: prev } = await bob.client.rpc('preview_retro', { p_token: retro.share_token })
   assert(prev[0].sprint_name === 'Sprint 1' && prev[0].already_joined === false, 'aperçu')
   const { data: id, error } = await bob.client.rpc('join_retro', { p_token: retro.share_token, p_display_name: 'Bob' })
@@ -121,6 +206,8 @@ await test('aperçu par jeton puis adhésion', async () => {
   await carol.client.rpc('join_retro', { p_token: retro.share_token, p_display_name: 'Carol' })
   const { data } = await bob.client.from('retros').select('id').eq('id', retro.id)
   assert(data.length === 1, 'visible après adhésion')
+  const { data: p } = await bob.client.from('participants').select('*').eq('retro_id', retro.id).eq('user_id', bob.id).single()
+  assert(p.display_name === 'Bob Martin' && p.job_title === 'Développeur', 'nom et poste repris de l’annuaire')
 })
 
 await test('jeton invalide refusé', async () => {
@@ -186,6 +273,25 @@ await test('validation : titre trop long refusé', async () => {
   await expectError(
     bob.client.rpc('create_card', { p_retro_id: retro.id, p_category: 'positive', p_title: 'x'.repeat(141), p_description: '', p_anonymous: false }),
   )
+})
+
+await test('option « participants peuvent proposer des cartes » désactivée', async () => {
+  await alice.client.from('retros').update({ participants_can_add: false }).eq('id', retro.id)
+  await expectError(
+    bob.client.rpc('create_card', { p_retro_id: retro.id, p_category: 'positive', p_title: 'Interdit', p_description: '', p_anonymous: false }),
+    'fermées',
+  )
+  const { error } = await alice.client.rpc('create_card', { p_retro_id: retro.id, p_category: 'positive', p_title: 'Carte admin', p_description: '', p_anonymous: false })
+  if (error) throw error
+  await alice.client.from('retros').update({ participants_can_add: true }).eq('id', retro.id)
+})
+
+await test('vitrine : rétros ouvertes listées pour les personnes identifiées seulement', async () => {
+  const { data: forBob } = await bob.client.rpc('list_open_retros')
+  assert(forBob.some((r) => r.retro_id === retro.id && r.joined), 'visible et rejointe pour Bob')
+  const { data: forEve } = await eve.client.rpc('list_open_retros')
+  assert(forEve.length === 0, 'rien pour un invité non identifié')
+  await expectError(eve.client.rpc('join_open_retro', { p_retro_id: retro.id }), 'Identifiez-vous')
 })
 
 console.log('\nCommentaires')
@@ -322,7 +428,7 @@ await test('carte source d’une autre rétro refusée', async () => {
   const { data: other } = await alice.client.rpc('create_retro', {
     p_team_id: retro.team_id, p_team_name: null, p_sprint_name: 'Sprint 2', p_retro_date: '2026-11-07',
     p_facilitator_name: 'Alice', p_goal: '', p_closes_at: null, p_max_votes: 5, p_allow_multiple_votes: false,
-    p_confidential_votes: false, p_allow_anonymous: true, p_display_name: 'Alice',
+    p_confidential_votes: false, p_allow_anonymous: true, p_participants_can_add: true, p_display_name: 'Alice',
   })
   await expectError(
     alice.client.from('action_items').insert({ retro_id: other.id, team_id: other.team_id, title: 'x', source_card_id: ideaCard.id }),
@@ -377,6 +483,8 @@ await test('le facilitateur supprime la rétro (cascade)', async () => {
   const { data } = await alice.client.from('cards').select('id').eq('retro_id', retro.id)
   assert(data.length === 0, 'cartes supprimées')
 })
+
+if (createdMembers.length) await alice.client.from('members').delete().in('id', createdMembers)
 
 console.log(`\n${passed} réussi(s), ${failed} échoué(s)\n`)
 process.exit(failed ? 1 : 0)

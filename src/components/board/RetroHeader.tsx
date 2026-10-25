@@ -5,6 +5,7 @@ import { STATUS_BADGE, STATUS_LABEL } from '../../lib/constants'
 import { formatDate, formatDateTime } from '../../lib/format'
 import type { Board } from '../../hooks/useRetroBoard'
 import type { ReactNode } from 'react'
+import { useAuth } from '../../context/AuthContext'
 
 export function RetroHeader({
   board,
@@ -19,6 +20,7 @@ export function RetroHeader({
   actions: ReactNode
   section?: string
 }) {
+  const { isAdmin } = useAuth()
   const retro = board.retro!
   const shown = [...board.participants]
     .sort((a, b) => Number(online.has(b.user_id)) - Number(online.has(a.user_id)))
@@ -29,7 +31,7 @@ export function RetroHeader({
     <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
       <div className="min-w-0">
         <nav className="flex items-center gap-1 text-xs text-slate-500" aria-label="Fil d’Ariane">
-          <Link to="/retros" className="hover:text-slate-800">
+          <Link to={isAdmin ? '/admin/retros' : '/'} className="hover:text-slate-800">
             {retro.teams?.name ?? 'Équipe'}
           </Link>
           <ChevronRight className="size-3" />
@@ -80,7 +82,7 @@ export function RetroHeader({
           <div className="flex -space-x-2">
             {shown.map((p) => (
               <span key={p.user_id} className="relative">
-                <Avatar name={p.display_name} seed={p.user_id} className="ring-2 ring-white" />
+                <Avatar name={p.display_name} seed={p.user_id} src={p.photo_url} className="ring-2 ring-white" />
                 {online.has(p.user_id) && (
                   <span className="absolute right-0 bottom-0 size-2 rounded-full bg-emerald-500 ring-2 ring-white" />
                 )}

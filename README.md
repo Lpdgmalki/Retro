@@ -11,6 +11,23 @@ Application web collaborative pour animer les **rétrospectives de sprint** en s
 
 ---
 
+## Back office et site vitrine
+
+L’application comporte deux espaces :
+
+| Espace | Adresse | Pour qui | Contenu |
+| --- | --- | --- | --- |
+| **Site vitrine** | `/` | Collaborateurs invités | Saisie de l’e-mail avec **suggestions issues de l’annuaire**, accueil personnalisé (« Bienvenue Mme Durand », poste, photo), rétrospectives en cours, historique personnel. Lien discret « Back office » en pied de page. |
+| **Back office** | `/admin` | Administrateurs (e-mail + mot de passe) | Tableau de bord, création et gestion des rétrospectives, **annuaire des utilisateurs** (civilité, prénom, nom, e-mail, poste, photo, actif ; import/export CSV), suivi des actions, **paramètres** (nom de l’organisation, textes d’accueil, suggestions d’e-mails, invités hors annuaire, valeurs par défaut des rétros), gestion des administrateurs. |
+
+Règles d’accès :
+- **Seuls les administrateurs créent des rétrospectives** ; ils sont facilitateurs de toutes les rétros.
+- Les invités s’identifient avec un e-mail **présent et actif dans l’annuaire**, puis votent et commentent. Ils peuvent aussi proposer des cartes si l’option « Les participants peuvent proposer des cartes » est activée sur la rétro (réglable par rétro, valeur par défaut dans les paramètres).
+- Option « Invités hors annuaire » (désactivée par défaut) : permet de rejoindre via un lien d’invitation avec un simple pseudo.
+- **Premier administrateur** : ouvrez `/admin` → « Créer le compte administrateur ». Ce formulaire n’apparaît que tant qu’aucun administrateur n’existe. Les suivants créent leur compte sur la même page puis sont promus dans *Paramètres → Administrateurs*.
+
+> Sécurité : l’identification par e-mail est volontairement simple (pas de mot de passe pour les invités). Toute personne connaissant l’e-mail d’un collaborateur peut se présenter sous son nom ; désactivez les suggestions dans les paramètres pour ne pas exposer l’annuaire, et réservez le site à votre réseau si nécessaire.
+
 ## Sommaire
 
 1. [Fonctionnalités](#fonctionnalités)
@@ -176,7 +193,7 @@ Pour simuler plusieurs participants, ouvrez le lien d’invitation dans une fen�
 
 ```bash
 npx supabase start
-npm run db:test             # 33 tests : RLS, anonymat, quotas, concurrence, confidentialité, temps réel
+npm run db:test             # 40 tests : back office, annuaire, RLS, anonymat, quotas, concurrence, confidentialité, temps réel
 npm run dev &               # puis, dans un autre terminal :
 npm run test:e2e            # deux navigateurs (desktop + mobile) jouent une rétro complète
 ```
@@ -195,7 +212,7 @@ Le scénario E2E couvre : création, partage, adhésion sur mobile, ouverture, a
    npx supabase link --project-ref <votre-ref-projet>
    npx supabase db push
    ```
-   *(ou copiez le contenu de `supabase/migrations/20261024000000_init.sql` dans l’éditeur SQL du tableau de bord et exécutez-le).*
+   *(ou copiez le contenu de `supabase/install.sql` dans l’éditeur SQL du tableau de bord et exécutez-le : il contient toutes les migrations ; régénérez-le avec `scripts/build-install-sql.sh` après modification d’une migration). Pour mettre à jour une base existante sans perdre de données, exécutez seulement la nouvelle migration (`supabase/migrations/20261025000000_backoffice.sql`).*
 3. **Authentication → Sign In / Providers** : activez **Allow anonymous sign-ins** (indispensable pour l’accès invité). Activez aussi le fournisseur **Email** pour les liens magiques.
 4. **Authentication → URL Configuration** : *Site URL* = l’URL de votre application (ex. `https://retro.mon-entreprise.fr`) et ajoutez-la dans *Redirect URLs*.
 5. Recommandé en production : activer la **protection CAPTCHA** (Turnstile/hCaptcha) et ajuster les limites de connexions anonymes (*Rate Limits*), configurer un **SMTP** d’entreprise pour les e-mails.

@@ -106,7 +106,7 @@ function CommentNode({
           {comment.is_deleted ? (
             <span className="size-5 rounded-full bg-slate-100" />
           ) : (
-            <Avatar name={author} seed={comment.author_id ?? ''} size="xs" />
+            <Avatar name={author} seed={comment.author_id ?? ''} src={board.photoOf.get(comment.author_id ?? '')} size="xs" />
           )}
           <span className="font-medium text-slate-800">{comment.is_deleted ? '—' : author}</span>
           {mine && !comment.is_deleted && <span className="text-slate-400">(vous)</span>}

@@ -1,4 +1,4 @@
-import { forwardRef, useId, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react'
+import { forwardRef, useId, useState, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react'
 import { Loader2 } from 'lucide-react'
 import { avatarColor, initials } from '../../lib/format'
 
@@ -221,8 +221,32 @@ export function PageLoader({ label }: { label?: string }) {
   )
 }
 
-export function Avatar({ name, seed, size = 'md', className }: { name: string; seed?: string; size?: 'xs' | 'sm' | 'md'; className?: string }) {
-  const sizes = { xs: 'size-5 text-[9px]', sm: 'size-6 text-[10px]', md: 'size-8 text-xs' }
+export function Avatar({
+  name,
+  seed,
+  src,
+  size = 'md',
+  className,
+}: {
+  name: string
+  seed?: string
+  src?: string | null
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+  className?: string
+}) {
+  const [failed, setFailed] = useState(false)
+  const sizes = { xs: 'size-5 text-[9px]', sm: 'size-6 text-[10px]', md: 'size-8 text-xs', lg: 'size-12 text-base', xl: 'size-20 text-2xl' }
+  if (src && !failed) {
+    return (
+      <img
+        src={src}
+        alt={name}
+        title={name}
+        onError={() => setFailed(true)}
+        className={cx('inline-block shrink-0 rounded-full bg-slate-100 object-cover', sizes[size], className)}
+      />
+    )
+  }
   return (
     <span
       title={name}

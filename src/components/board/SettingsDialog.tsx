@@ -30,6 +30,7 @@ export function SettingsDialog({ open, onClose, board }: { open: boolean; onClos
       allow_multiple_votes: retro.allow_multiple_votes,
       confidential_votes: retro.confidential_votes,
       allow_anonymous: retro.allow_anonymous,
+      participants_can_add: retro.participants_can_add,
     }
   }
 
@@ -59,6 +60,7 @@ export function SettingsDialog({ open, onClose, board }: { open: boolean; onClos
         allow_multiple_votes: values.allow_multiple_votes,
         confidential_votes: values.confidential_votes,
         allow_anonymous: values.allow_anonymous,
+        participants_can_add: values.participants_can_add,
       })
       toast.success('Paramètres enregistrés')
       onClose()
@@ -119,7 +121,7 @@ export function SettingsDialog({ open, onClose, board }: { open: boolean; onClos
             const { error } = await supabase.from('retros').delete().eq('id', retro.id)
             if (error) throw error
             toast.success('Rétrospective supprimée')
-            navigate('/')
+            navigate('/admin/retros')
           } catch (e) {
             toast.error(e)
             setDeleting(false)

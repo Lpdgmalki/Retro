@@ -13,8 +13,8 @@ const VIEWS: View[] = ['overview', 'positive', 'negative', 'improvement', 'actio
 
 export function PresentPage() {
   const { id } = useParams()
-  const { user } = useAuth()
-  const board = useRetroBoard(id, user?.id)
+  const { user, isAdmin } = useAuth()
+  const board = useRetroBoard(id, user?.id, isAdmin)
   return (
     <RetroGate board={board}>
       <PresentView board={board} />

@@ -26,7 +26,7 @@ export function ShareDialog({ open, onClose, retro, teamName }: { open: boolean;
 
   const subject = encodeURIComponent(`Rétrospective ${teamName} — ${retro.sprint_name}`)
   const body = encodeURIComponent(
-    `Bonjour,\n\nRejoignez notre rétrospective de sprint « ${retro.sprint_name} » :\n${url}\n\nIl suffit de choisir un pseudo pour participer.\n`,
+    `Bonjour,\n\nRejoignez notre rétrospective de sprint « ${retro.sprint_name} » :\n${url}\n\nIdentifiez-vous simplement avec votre adresse e-mail professionnelle.\n`,
   )
 
   return (
@@ -49,7 +49,7 @@ export function ShareDialog({ open, onClose, retro, teamName }: { open: boolean;
           <Mail className="size-4" /> Envoyer l’invitation par e-mail
         </a>
         <ul className="space-y-1.5 rounded-xl bg-slate-50 p-4 text-xs text-slate-600">
-          <li>• Les participants choisissent simplement un pseudo, sans création de compte.</li>
+          <li>• Les participants s’identifient avec leur e-mail professionnel (annuaire du back office).</li>
           <li>• Ils rejoignent aussi l’équipe et pourront consulter l’historique de ses rétrospectives.</li>
           <li>• Seuls les facilitateurs peuvent changer le statut, les paramètres et les actions.</li>
         </ul>

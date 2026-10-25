@@ -11,6 +11,7 @@ export interface RetroSettingsValues {
   allow_multiple_votes: boolean
   confidential_votes: boolean
   allow_anonymous: boolean
+  participants_can_add: boolean
 }
 
 export function validateRetroSettings(v: RetroSettingsValues): Record<string, string> {
@@ -132,6 +133,12 @@ export function RetroVoteFields({
           />
         )}
       </Field>
+      <Switch
+        checked={values.participants_can_add}
+        onChange={(v) => onChange('participants_can_add', v)}
+        label="Les participants peuvent proposer des cartes"
+        description="Désactivé : seuls les facilitateurs ajoutent des cartes ; les participants votent et commentent."
+      />
       <Switch
         checked={values.allow_multiple_votes}
         onChange={(v) => onChange('allow_multiple_votes', v)}

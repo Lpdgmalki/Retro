@@ -1,12 +1,52 @@
-// Test de bout en bout : deux navigateurs (facilitatrice + participant) en temps réel.
-// Prérequis : Supabase local démarré et l'application servie (npm run dev) sur APP_URL.
-// Usage : APP_URL=http://localhost:5173 node scripts/test-e2e.mjs
+// Test de bout en bout : administrateur (back office) + deux invités de l'annuaire, en temps réel.
+// Prérequis : Supabase démarré (migrations appliquées) et l'application servie sur APP_URL.
+// Usage : APP_URL=http://localhost:5173 TEST_ADMIN_EMAIL=… TEST_ADMIN_PASSWORD=… node scripts/test-e2e.mjs
+// En local, le compte admin@retro.test est créé par `npm run db:test`.
 import { chromium } from 'playwright'
 import { mkdirSync } from 'node:fs'
+import { deflateSync } from 'node:zlib'
 
 const APP = process.env.APP_URL ?? 'http://localhost:5173'
 const SHOTS = process.env.SHOTS_DIR ?? 'test-results'
+const ADMIN_EMAIL = process.env.TEST_ADMIN_EMAIL ?? 'admin@retro.test'
+const ADMIN_PASSWORD = process.env.TEST_ADMIN_PASSWORD ?? 'Test-Admin-2026!'
 mkdirSync(SHOTS, { recursive: true })
+
+const stamp = Date.now().toString(36)
+const BOB = { email: `bob.martin.${stamp}@retro.test`, first: 'Bob', last: 'Martin', job: 'Développeur front-end' }
+const CAROL = { email: `carol.durand.${stamp}@retro.test`, first: 'Carol', last: 'Durand', job: 'Product Owner' }
+const TEAM = `Équipe Phoenix ${stamp}`
+
+/** PNG 64×64 uni généré à la volée (photo de test). */
+function makePng(r, g, b) {
+  const size = 64
+  const crcTable = Array.from({ length: 256 }, (_, n) => {
+    let c = n
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1
+    return c >>> 0
+  })
+  const crc = (buf) => {
+    let c = 0xffffffff
+    for (const byte of buf) c = crcTable[(c ^ byte) & 0xff] ^ (c >>> 8)
+    return (c ^ 0xffffffff) >>> 0
+  }
+  const chunk = (type, data) => {
+    const len = Buffer.alloc(4)
+    len.writeUInt32BE(data.length)
+    const td = Buffer.concat([Buffer.from(type), data])
+    const c = Buffer.alloc(4)
+    c.writeUInt32BE(crc(td))
+    return Buffer.concat([len, td, c])
+  }
+  const ihdr = Buffer.alloc(13)
+  ihdr.writeUInt32BE(size, 0)
+  ihdr.writeUInt32BE(size, 4)
+  ihdr[8] = 8
+  ihdr[9] = 2
+  const raw = Buffer.alloc((size * 3 + 1) * size)
+  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) raw.set([r, g, b], y * (size * 3 + 1) + 1 + x * 3)
+  return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', ihdr), chunk('IDAT', deflateSync(raw)), chunk('IEND', Buffer.alloc(0))])
+}
 
 // Derrière un proxy HTTPS (environnements CI/cloud), on le transmet au navigateur.
 const proxy = process.env.HTTPS_PROXY ? { server: process.env.HTTPS_PROXY } : undefined
@@ -25,153 +65,151 @@ const step = (s) => console.log(`  → ${s}`)
 const T = { timeout: 15000 }
 
 try {
-  const alice = await newPage('alice')
+  const admin = await newPage('admin')
   const bob = await newPage('bob', { width: 390, height: 844 }) // smartphone
+  const carol = await newPage('carol')
 
-  step('Alice crée une rétrospective')
-  await alice.goto(APP)
-  await alice.getByRole('link', { name: /Créer ma première rétrospective/ }).click()
-  await alice.getByLabel(/Nom de l’équipe ou du projet/).fill('Équipe Phoenix')
-  await alice.getByLabel('Votre pseudo dans la session').fill('Alice')
-  await alice.getByLabel(/^Sprint/).fill('Sprint 12')
-  await alice.getByLabel(/^Facilitateur/).fill('Alice Martin')
-  await alice.getByLabel(/Objectif ou contexte/).fill('Livrer le parcours de paiement mobile')
-  await alice.screenshot({ path: `${SHOTS}/01-creation.png`, fullPage: true })
-  await alice.getByRole('button', { name: 'Créer la rétrospective' }).click()
-  await alice.getByRole('dialog', { name: 'Inviter l’équipe' }).waitFor(T)
-  const shareUrl = await alice.locator('#share-url').inputValue()
-  if (!shareUrl.includes('/join/')) throw new Error('lien de partage invalide')
-  await alice.screenshot({ path: `${SHOTS}/02-partage.png` })
-  await alice.keyboard.press('Escape')
+  step('Un invité ne peut pas entrer dans le back office')
+  await bob.goto(APP + '/admin')
+  await bob.waitForURL(/\/admin\/login$/, T)
 
-  step('Bob rejoint via le lien (mobile)')
-  await bob.goto(shareUrl)
-  await bob.getByText('Invitation à une rétrospective').waitFor(T)
-  await bob.screenshot({ path: `${SHOTS}/03-invitation-mobile.png` })
-  await bob.getByLabel(/Votre nom ou pseudo/).fill('Bob')
-  await bob.getByRole('button', { name: 'Rejoindre la rétrospective' }).click()
+  step('Connexion administrateur')
+  await admin.goto(APP)
+  await admin.getByRole('link', { name: 'Accès back office' }).click()
+  await admin.getByLabel('E-mail').fill(ADMIN_EMAIL)
+  await admin.getByLabel('Mot de passe', { exact: true }).fill(ADMIN_PASSWORD)
+  await admin.getByRole('button', { name: 'Se connecter' }).click()
+  await admin.getByRole('link', { name: 'Annuaire' }).first().waitFor(T)
+
+  step('Annuaire : ajout d’un utilisateur avec photo')
+  await admin.getByRole('link', { name: 'Annuaire' }).first().click()
+  await admin.getByRole('button', { name: 'Ajouter', exact: true }).click()
+  const form = admin.getByRole('dialog', { name: 'Ajouter un utilisateur' })
+  await form.getByLabel('Civilité').selectOption('M.')
+  await form.getByLabel('Prénom').fill(BOB.first)
+  await form.getByLabel('Nom', { exact: true }).fill(BOB.last)
+  await form.getByLabel(/E-mail professionnel/).fill(BOB.email)
+  await form.getByLabel('Poste').fill(BOB.job)
+  await form.getByLabel('Photo').setInputFiles({ name: 'bob.png', mimeType: 'image/png', buffer: makePng(79, 70, 229) })
+  await form.getByRole('img', { name: /Bob Martin/ }).waitFor(T)
+  await form.getByRole('button', { name: 'Enregistrer' }).click()
+  await admin.getByText(BOB.email).waitFor(T)
+
+  step('Annuaire : import CSV')
+  await admin.getByRole('button', { name: 'Importer' }).click()
+  const csv = `email;civilite;prenom;nom;poste\n${CAROL.email};Madame;${CAROL.first};${CAROL.last};${CAROL.job}\nmauvais-email;M.;X;Y;Z\n`
+  await admin.getByLabel('Fichier CSV').setInputFiles({ name: 'annuaire.csv', mimeType: 'text/csv', buffer: Buffer.from(csv) })
+  await admin.getByText(/1 nouvel\(s\) utilisateur/).waitFor(T)
+  await admin.getByText(/e-mail invalide/).waitFor(T)
+  await admin.getByRole('button', { name: /^Importer \(1\)/ }).click()
+  await admin.getByText(CAROL.email).waitFor(T)
+  await admin.screenshot({ path: `${SHOTS}/01-annuaire.png`, fullPage: true })
+
+  step('Création d’une rétrospective (réservée à l’admin)')
+  await admin.getByRole('link', { name: /Nouvelle rétro/ }).click()
+  await admin.getByRole('button', { name: 'Créer la rétrospective' }).waitFor(T)
+  const teamSelect = admin.getByLabel('Équipe ou projet')
+  if (await teamSelect.count()) await teamSelect.selectOption('__new__')
+  await admin.getByLabel(/Nom de la nouvelle équipe|Nom de l’équipe ou du projet/).fill(TEAM)
+  await admin.getByLabel('Votre pseudo dans la session').fill('Alice (admin)')
+  await admin.getByLabel(/^Sprint/).fill('Sprint 12')
+  await admin.getByLabel(/^Facilitateur/).fill('Alice Martin')
+  await admin.getByLabel(/Objectif ou contexte/).fill('Livrer le parcours de paiement mobile')
+  await admin.getByRole('button', { name: 'Créer la rétrospective' }).click()
+  await admin.getByRole('dialog', { name: 'Inviter l’équipe' }).waitFor(T)
+  const shareUrl = await admin.locator('#share-url').inputValue()
+  await admin.keyboard.press('Escape')
+  await admin.getByRole('button', { name: 'Ouvrir les contributions' }).click()
+  await admin.getByText('Statut : En cours').waitFor(T)
+
+  step('Vitrine : Bob tape son e-mail, choisit la suggestion, est accueilli')
+  await bob.goto(APP)
+  await bob.getByLabel('Votre adresse e-mail professionnelle').fill(`bob.martin.${stamp}`)
+  await bob.getByRole('option', { name: new RegExp(BOB.email.replace(/\./g, '\\.')) }).click()
+  await bob.getByText('Bienvenue M. Martin').waitFor(T)
+  await bob.locator('p', { hasText: BOB.job }).first().waitFor(T)
+  await bob.getByRole('img', { name: 'Bob Martin' }).first().waitFor(T)
+  await bob.screenshot({ path: `${SHOTS}/02-vitrine-bienvenue.png` })
+  await bob.getByRole('button', { name: /Accéder à mes rétrospectives/ }).click()
+  await bob.getByText('Rétrospectives en cours').waitFor(T)
+  await bob.screenshot({ path: `${SHOTS}/03-vitrine-retros.png`, fullPage: true })
+  const card = bob.locator('div', { hasText: TEAM }).getByRole('button', { name: /Rejoindre/ }).first()
+  await card.click()
   await bob.getByRole('heading', { name: 'Sprint 12' }).waitFor(T)
+  if (await bob.getByRole('link', { name: /Nouvelle rétro/ }).count()) throw new Error('un invité voit « Nouvelle rétro »')
 
-  step('Alice voit Bob arriver et ouvre les contributions')
-  await alice.getByRole('button', { name: /Voir les 2 participants/ }).waitFor(T)
-  await alice.getByRole('button', { name: 'Ouvrir les contributions' }).click()
-  await bob.getByText('Tout le monde peut ajouter des cartes et commenter.').waitFor(T).catch(async () => {
-    // Côté participant, le stepper indique l'étape courante.
-    await bob.locator('[aria-current="step"]', { hasText: 'En cours' }).waitFor({ timeout: 30000 })
-  })
+  step('Carol rejoint via le lien d’invitation (e-mail exact)')
+  await carol.goto(shareUrl)
+  await carol.getByText('Invitation à une rétrospective').waitFor(T)
+  await carol.getByLabel('Votre adresse e-mail professionnelle').fill(CAROL.email)
+  await carol.getByRole('button', { name: 'Continuer' }).click()
+  await carol.getByText('Bienvenue Mme Durand').waitFor(T)
+  await carol.getByRole('button', { name: 'Rejoindre la rétrospective' }).click()
+  await carol.getByRole('heading', { name: 'Sprint 12' }).waitFor(T)
+  await admin.getByRole('button', { name: /Voir les 3 participants/ }).waitFor({ timeout: 30000 })
 
-  step('Bob ajoute une carte « négatif » ; Alice la reçoit en direct')
+  step('Bob ajoute une carte ; l’admin la reçoit en direct')
   await bob.getByRole('tab', { name: /Négatif/ }).click()
   await bob.getByRole('button', { name: 'Ajouter dans Points négatifs' }).click()
   await bob.getByLabel(/^Titre/).fill('Trop d’interruptions pendant le sprint')
-  await bob.getByLabel(/^Description/).fill('Les demandes urgentes arrivent directement aux développeurs.')
   await bob.getByRole('button', { name: 'Ajouter', exact: true }).click()
-  await alice.getByRole('heading', { name: 'Trop d’interruptions pendant le sprint' }).waitFor(T)
+  await admin.getByRole('heading', { name: 'Trop d’interruptions pendant le sprint' }).waitFor({ timeout: 30000 })
 
-  step('Alice ajoute des cartes dans les autres colonnes')
-  const add = async (col, title, anon = false) => {
-    await alice.getByRole('button', { name: `Ajouter dans ${col}` }).click()
-    await alice.getByLabel(/^Titre/).fill(title)
-    if (anon) await alice.getByLabel('Publier anonymement').check()
-    await alice.getByRole('button', { name: 'Ajouter', exact: true }).click()
-    await alice.getByRole('heading', { name: title }).waitFor(T)
-  }
-  await add('Points positifs', 'Excellente entraide sur les revues de code')
-  await add('Idées d’amélioration', 'Instaurer un « Bouclier » qui filtre les urgences')
-  await add('Idées d’amélioration', 'Atelier d’affinage chaque mardi', true)
-  await add('Actions à mettre en place', 'Définir une Definition of Ready avec le PO')
-  await bob.getByRole('tab', { name: /Idée/ }).click()
-  await bob.getByRole('heading', { name: 'Atelier d’affinage chaque mardi' }).waitFor(T)
-  if (!(await bob.getByText('Anonyme').first().isVisible())) throw new Error('carte anonyme non masquée')
+  step('Option : les participants ne peuvent plus proposer de cartes')
+  await admin.getByRole('button', { name: 'Paramètres' }).click()
+  await admin.getByRole('switch', { name: /participants peuvent proposer des cartes/ }).click()
+  await admin.getByRole('button', { name: 'Enregistrer' }).click()
+  await admin.getByText('Paramètres enregistrés').waitFor(T)
+  await carol.getByRole('button', { name: 'Ajouter dans Points positifs' }).waitFor({ state: 'detached', timeout: 30000 })
+  await admin.getByRole('button', { name: 'Ajouter dans Idées d’amélioration' }).click()
+  await admin.getByLabel(/^Titre/).fill('Instaurer un « Bouclier » qui filtre les urgences')
+  await admin.getByRole('button', { name: 'Ajouter', exact: true }).click()
 
-  step('Commentaires et réponses en temps réel')
-  await alice.getByRole('heading', { name: 'Trop d’interruptions pendant le sprint' }).click()
-  const drawer = alice.getByRole('dialog', { name: 'Trop d’interruptions pendant le sprint' })
+  step('Commentaires et votes')
+  await carol.getByRole('heading', { name: 'Trop d’interruptions pendant le sprint' }).click()
+  const drawer = carol.getByRole('dialog', { name: 'Trop d’interruptions pendant le sprint' })
   await drawer.getByLabel('Ajouter un commentaire…').fill('Combien par jour environ ?')
   await drawer.getByRole('button', { name: 'Commenter' }).click()
   await drawer.getByText('Combien par jour environ ?').waitFor(T)
-  await bob.getByRole('tab', { name: /Négatif/ }).click()
-  await bob.getByRole('button', { name: /1 commentaire\(s\)/ }).click()
-  const bobDrawer = bob.getByRole('dialog', { name: 'Trop d’interruptions pendant le sprint' })
-  await bobDrawer.getByText('Combien par jour environ ?').waitFor(T)
-  await bobDrawer.getByRole('button', { name: 'Répondre' }).click()
-  await bobDrawer.getByLabel(/Répondre à Alice/).fill('Au moins 5 !')
-  await bobDrawer.getByRole('button', { name: 'Répondre', exact: true }).last().click()
-  await drawer.getByText('Au moins 5 !').waitFor(T)
-  await alice.screenshot({ path: `${SHOTS}/04-commentaires.png` })
-  await bob.screenshot({ path: `${SHOTS}/05-commentaires-mobile.png` })
-  await alice.keyboard.press('Escape')
-  await bob.keyboard.press('Escape')
+  await carol.keyboard.press('Escape')
+  await admin.getByRole('button', { name: 'Lancer le vote' }).click()
+  await admin.getByRole('button', { name: 'Confirmer' }).click()
+  await carol.getByText(/Il vous reste 5 votes sur 5/).waitFor({ timeout: 30000 })
+  await carol.getByRole('article', { name: 'Instaurer un « Bouclier » qui filtre les urgences' }).getByRole('button', { name: 'Voter pour cette idée' }).click()
+  await carol.getByText(/Il vous reste 4 votes sur 5/).waitFor(T)
+  await carol.screenshot({ path: `${SHOTS}/04-tableau-invitee.png`, fullPage: true })
 
-  step('Alice lance le vote ; Bob vote (quota de 5)')
-  await alice.getByRole('button', { name: 'Lancer le vote' }).click()
-  await alice.getByRole('button', { name: 'Confirmer' }).click()
-  await bob.getByText(/Il vous reste 5 votes sur 5/).waitFor(T)
-  await bob.getByRole('tab', { name: /Idée/ }).click()
-  const bobIdea = bob.getByRole('article', { name: 'Instaurer un « Bouclier » qui filtre les urgences' })
-  await bobIdea.getByRole('button', { name: 'Voter pour cette idée' }).click()
-  await bob.getByText(/Il vous reste 4 votes sur 5/).waitFor(T)
-  const aliceIdea = alice.getByRole('article', { name: 'Instaurer un « Bouclier » qui filtre les urgences' })
-  await aliceIdea.getByTitle('1 vote au total').waitFor(T)
-  await aliceIdea.getByRole('button', { name: 'Voter pour cette idée' }).click()
-  await bobIdea.getByTitle('2 votes au total').waitFor(T)
-  await bob.getByRole('tab', { name: /Négatif/ }).click()
-  await bob.getByRole('article', { name: 'Trop d’interruptions pendant le sprint' }).getByRole('button', { name: 'Voter pour cette idée' }).click()
-  await bob.getByText(/Il vous reste 3 votes sur 5/).waitFor(T)
-  await alice.screenshot({ path: `${SHOTS}/06-vote.png`, fullPage: true })
-  await bob.screenshot({ path: `${SHOTS}/07-vote-mobile.png` })
-
-  step('Alice clôture et consulte la synthèse')
-  await alice.getByRole('button', { name: 'Clôturer la rétrospective' }).click()
-  await alice.getByRole('button', { name: 'Confirmer' }).click()
-  await alice.getByText('Vote clôturé.').waitFor(T)
-  await alice.getByRole('link', { name: 'Synthèse' }).click()
-  await alice.getByText('Top 5 des idées les plus votées').waitFor(T)
-
-  step('Conversion de l’idée gagnante en action')
-  await alice.getByRole('button', { name: /Instaurer un « Bouclier/ }).last().click()
-  const dialog = alice.getByRole('dialog', { name: 'Convertir en action' })
-  await dialog.getByLabel('Responsable').fill('Bob')
-  await dialog.getByLabel('Priorité').selectOption('high')
+  step('Clôture, synthèse, action')
+  await admin.getByRole('button', { name: 'Clôturer la rétrospective' }).click()
+  await admin.getByRole('button', { name: 'Confirmer' }).click()
+  await admin.getByText('Vote clôturé.').waitFor(T)
+  await admin.getByRole('link', { name: 'Synthèse' }).click()
+  await admin.getByRole('button', { name: /Instaurer un « Bouclier/ }).last().click()
+  const dialog = admin.getByRole('dialog', { name: 'Convertir en action' })
+  await dialog.getByLabel('Responsable').fill('Bob Martin')
   await dialog.getByRole('button', { name: 'Créer l’action' }).click()
-  await alice.getByRole('cell', { name: 'Instaurer un « Bouclier » qui filtre les urgences' }).first().waitFor(T)
-  await alice.screenshot({ path: `${SHOTS}/08-synthese.png`, fullPage: true })
+  await admin.getByRole('cell', { name: 'Instaurer un « Bouclier » qui filtre les urgences' }).first().waitFor(T)
+  await admin.screenshot({ path: `${SHOTS}/05-synthese.png`, fullPage: true })
 
-  step('Export CSV des actions')
-  const [download] = await Promise.all([alice.waitForEvent('download'), alice.getByRole('button', { name: 'Actions CSV' }).click()])
-  if (!download.suggestedFilename().endsWith('.csv')) throw new Error('export CSV absent')
+  step('Paramètres du back office')
+  await admin.getByRole('link', { name: 'Paramètres' }).first().click()
+  await admin.getByText('Administrateurs').first().waitFor(T)
+  await admin.getByText(ADMIN_EMAIL).waitFor(T)
+  await admin.screenshot({ path: `${SHOTS}/06-parametres.png`, fullPage: true })
 
-  step('Bob met à jour le statut de l’action depuis le tableau de bord')
-  await bob.goto(APP)
-  await bob.getByText('Actions à suivre').waitFor(T)
-  await bob.getByLabel('Statut de l’action').first().selectOption('in_progress')
-  await bob.screenshot({ path: `${SHOTS}/09-accueil-mobile.png`, fullPage: true })
-  await alice.goto(APP + '/actions')
-  await alice.getByText('Suivi des actions').waitFor(T)
-  await alice.locator('select[aria-label="Statut de l’action"]').first().waitFor(T)
-  const status = await alice.locator('table select[aria-label="Statut de l’action"]').first().inputValue()
-  if (status !== 'in_progress') throw new Error(`statut attendu in_progress, obtenu ${status}`)
-
-  step('Mode présentation')
-  await alice.goto(APP)
-  await alice.getByRole('link', { name: 'Sprint 12' }).first().click()
-  await alice.getByRole('link', { name: /Présenter/ }).click()
-  await alice.getByText('Vue d’ensemble').first().waitFor(T).catch(() => {})
-  await alice.screenshot({ path: `${SHOTS}/10-presentation.png` })
-  await alice.keyboard.press('ArrowRight')
-  await alice.keyboard.press('ArrowRight')
-
-  step('Dashboard desktop')
-  await alice.goto(APP)
-  await alice.getByText('Rétrospectives récentes').waitFor(T)
-  await alice.screenshot({ path: `${SHOTS}/11-accueil.png`, fullPage: true })
-
-  step('Nettoyage : suppression de la rétrospective de test')
-  await alice.getByRole('link', { name: 'Sprint 12' }).first().click()
-  await alice.getByRole('button', { name: 'Paramètres' }).click()
-  await alice.getByRole('button', { name: /Supprimer la rétrospective/ }).click()
-  await alice.getByRole('button', { name: 'Supprimer', exact: true }).click()
-  await alice.waitForURL(APP + '/', T)
+  step('Nettoyage : rétrospective et utilisateurs de test')
+  await admin.getByRole('link', { name: 'Rétrospectives' }).first().click()
+  await admin.getByRole('link', { name: 'Sprint 12' }).first().click()
+  await admin.getByRole('button', { name: 'Paramètres' }).click()
+  await admin.getByRole('button', { name: /Supprimer la rétrospective/ }).click()
+  await admin.getByRole('button', { name: 'Supprimer', exact: true }).click()
+  await admin.waitForURL(/\/admin\/retros$/, T)
+  await admin.getByRole('link', { name: 'Annuaire' }).first().click()
+  for (const m of [BOB, CAROL]) {
+    await admin.getByRole('button', { name: `Supprimer ${m.email}` }).click()
+    await admin.getByRole('button', { name: 'Supprimer', exact: true }).click()
+    await admin.getByText(m.email).waitFor({ state: 'detached', timeout: 15000 })
+  }
 
   const relevant = errors.filter((e) => !/favicon|WebSocket|Download/i.test(e))
   if (relevant.length) {

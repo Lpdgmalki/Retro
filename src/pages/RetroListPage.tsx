@@ -41,7 +41,7 @@ export function RetroListPage() {
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Rétrospectives</h1>
           <p className="mt-1 text-sm text-slate-500">Historique des sessions de vos équipes.</p>
         </div>
-        <Link to="/new">
+        <Link to="/admin/new">
           <Button>
             <Plus className="size-4" /> <span className="hidden sm:inline">Nouvelle</span>
           </Button>
@@ -88,7 +88,7 @@ export function RetroListPage() {
         ) : (
           <ul className="divide-y divide-slate-100">
             {filtered.map((r) => (
-              <RetroRow key={r.id} retro={r} onDuplicate={(x) => navigate(`/new?from=${x.id}`)} />
+              <RetroRow key={r.id} retro={r} onDuplicate={(x) => navigate(`/admin/new?from=${x.id}`)} />
             ))}
           </ul>
         )}

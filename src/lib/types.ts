@@ -26,6 +26,7 @@ export interface Retro {
   confidential_votes: boolean
   votes_revealed: boolean
   allow_anonymous: boolean
+  participants_can_add: boolean
   summary_notes: string
   created_by: string | null
   created_at: string
@@ -42,6 +43,9 @@ export interface Participant {
   display_name: string
   role: ParticipantRole
   joined_at: string
+  member_id: string | null
+  job_title: string
+  photo_url: string
 }
 
 export interface Card {
@@ -94,4 +98,36 @@ export interface ActionItem {
 
 export interface ActionItemWithRetro extends ActionItem {
   retros: Pick<Retro, 'id' | 'sprint_name' | 'retro_date'> & { teams: Pick<Team, 'id' | 'name'> | null } | null
+}
+
+export type Civility = '' | 'M.' | 'Mme'
+
+export interface Member {
+  id: string
+  email: string
+  civility: Civility
+  first_name: string
+  last_name: string
+  job_title: string
+  photo_url: string
+  active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type MemberProfile = Pick<Member, 'id' | 'email' | 'civility' | 'first_name' | 'last_name' | 'job_title' | 'photo_url'>
+
+export interface AppSettings {
+  id: number
+  org_name: string
+  welcome_title: string
+  welcome_message: string
+  email_suggestions: boolean
+  allow_external_guests: boolean
+  default_max_votes: number
+  default_allow_multiple_votes: boolean
+  default_confidential_votes: boolean
+  default_allow_anonymous: boolean
+  default_participants_can_add: boolean
+  updated_at: string
 }
