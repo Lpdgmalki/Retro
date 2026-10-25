@@ -77,13 +77,13 @@ function RetroCardInner({ board, card, rank, onOpen, onConvert }: Props) {
   return (
     <article
       className={cx(
-        'group animate-card-in relative isolate rounded-2xl border bg-surface p-4 shadow-[0_1px_2px_rgb(10_10_12/0.04),0_10px_28px_-18px_rgb(10_10_12/0.22)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_2px_4px_rgb(10_10_12/0.05),0_18px_40px_-20px_rgb(10_10_12/0.3)]',
+        'group animate-card-in relative isolate rounded-xl border bg-surface p-3 shadow-[0_1px_2px_rgb(10_10_12/0.04),0_10px_28px_-18px_rgb(10_10_12/0.22)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_2px_4px_rgb(10_10_12/0.05),0_18px_40px_-20px_rgb(10_10_12/0.3)]',
         rank !== null && rank < 3 ? 'border-indigo-200 ring-1 ring-indigo-100' : 'border-slate-200',
       )}
       aria-label={card.title}
     >
-      <span className="pointer-events-none absolute inset-0 -z-10 overflow-hidden rounded-2xl" aria-hidden>
-        <span className={cx('absolute -top-14 -right-14 size-36 rounded-full opacity-20 blur-2xl transition-opacity duration-300 group-hover:opacity-35', cat.dot)} />
+      <span className="pointer-events-none absolute inset-0 -z-10 overflow-hidden rounded-xl" aria-hidden>
+        <span className={cx('absolute -top-14 -right-14 size-28 rounded-full opacity-20 blur-2xl transition-opacity duration-300 group-hover:opacity-35', cat.dot)} />
       </span>
       <div className="flex items-start gap-2">
         <button
@@ -96,11 +96,11 @@ function RetroCardInner({ board, card, rank, onOpen, onConvert }: Props) {
               <Award className="size-3" /> Priorité #{rank + 1}
             </Badge>
           )}
-          <h3 className="relative text-[15px] leading-snug font-bold tracking-[-0.015em] break-words text-slate-900 group-hover:text-indigo-700">
+          <h3 className="relative text-[14px] leading-snug font-bold tracking-[-0.01em] break-words text-slate-900 group-hover:text-indigo-700">
             {card.title}
           </h3>
           {card.description && (
-            <p className="relative mt-1.5 line-clamp-3 text-[13.5px] leading-relaxed break-words whitespace-pre-line text-slate-500">
+            <p className="relative mt-1 line-clamp-3 text-[13px] leading-relaxed break-words whitespace-pre-line text-slate-500">
               {card.description}
             </p>
           )}
@@ -124,7 +124,7 @@ function RetroCardInner({ board, card, rank, onOpen, onConvert }: Props) {
         </div>
       )}
 
-      <div className="mt-3 flex items-center justify-between gap-2">
+      <div className="mt-2.5 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
         <div className="flex min-w-0 items-center gap-1.5 text-xs text-slate-500">
           {card.is_anonymous ? (
             <span className="inline-flex size-5 items-center justify-center rounded-full bg-slate-100 text-slate-400">
