@@ -73,7 +73,7 @@ let retro
 await test('create_retro crée la rétro, l’équipe et le facilitateur', async () => {
   const { data, error } = await alice.client.rpc('create_retro', {
     p_team_id: null,
-    p_team_name: 'Équipe Test',
+    p_team_name: 'TEST AUTOMATIQUE (à ignorer)',
     p_sprint_name: 'Sprint 1',
     p_retro_date: '2026-10-24',
     p_facilitator_name: 'Alice',
@@ -335,6 +335,7 @@ await test('carte source d’une autre rétro refusée', async () => {
     bob.client.rpc('create_card', { p_retro_id: other.id, p_category: 'positive', p_title: 'x', p_description: '', p_anonymous: false }),
     'rejoindre',
   )
+  await alice.client.from('retros').delete().eq('id', other.id)
 })
 
 console.log('\nTemps réel')

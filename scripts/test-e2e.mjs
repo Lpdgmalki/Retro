@@ -8,11 +8,15 @@ const APP = process.env.APP_URL ?? 'http://localhost:5173'
 const SHOTS = process.env.SHOTS_DIR ?? 'test-results'
 mkdirSync(SHOTS, { recursive: true })
 
-const browser = await chromium.launch()
+// Derrière un proxy HTTPS (environnements CI/cloud), on le transmet au navigateur.
+const proxy = process.env.HTTPS_PROXY ? { server: process.env.HTTPS_PROXY } : undefined
+const browser = await chromium.launch({ proxy })
 const errors = []
+const pages = []
 async function newPage(name, viewport = { width: 1440, height: 900 }) {
-  const ctx = await browser.newContext({ viewport, locale: 'fr-FR', permissions: ['clipboard-read', 'clipboard-write'] })
+  const ctx = await browser.newContext({ viewport, locale: 'fr-FR', ignoreHTTPSErrors: Boolean(proxy) })
   const page = await ctx.newPage()
+  pages.push([name, page])
   page.on('pageerror', (e) => errors.push(`[${name}] ${e.message}`))
   page.on('console', (m) => m.type() === 'error' && errors.push(`[${name}] console: ${m.text()}`))
   return page
@@ -53,7 +57,7 @@ try {
   await alice.getByRole('button', { name: 'Ouvrir les contributions' }).click()
   await bob.getByText('Tout le monde peut ajouter des cartes et commenter.').waitFor(T).catch(async () => {
     // Côté participant, le stepper indique l'étape courante.
-    await bob.locator('[aria-current="step"]', { hasText: 'En cours' }).waitFor(T)
+    await bob.locator('[aria-current="step"]', { hasText: 'En cours' }).waitFor({ timeout: 30000 })
   })
 
   step('Bob ajoute une carte « négatif » ; Alice la reçoit en direct')
@@ -171,6 +175,7 @@ try {
   }
 } catch (e) {
   console.error('\n✗ Échec :', e.message)
+  for (const [name, p] of pages) await p.screenshot({ path: `${SHOTS}/echec-${name}.png`, fullPage: true }).catch(() => {})
   if (errors.length) console.error(errors.join('\n'))
   process.exitCode = 1
 } finally {

@@ -294,6 +294,26 @@ export function useRetroBoard(retroId: string | undefined, userId: string | unde
     }
   }, [retroId, userId, reload, scheduleUsage])
 
+  // Filet de sécurité : le temps réel peut manquer un événement (abonnement en cours
+  // d'établissement, réseau mobile, mise en veille). On resynchronise donc régulièrement
+  // tant que l'onglet est visible, et dès qu'il redevient actif.
+  useEffect(() => {
+    if (!retroId || !userId) return
+    const tick = setInterval(() => {
+      if (document.visibilityState === 'visible') reload()
+    }, 15000)
+    function onVisible() {
+      if (document.visibilityState === 'visible') reload()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('online', onVisible)
+    return () => {
+      clearInterval(tick)
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('online', onVisible)
+    }
+  }, [retroId, userId, reload])
+
   // En vote confidentiel, les votes des autres ne sont pas diffusés : on rafraîchit la participation.
   const confidentialVoting = state.retro?.status === 'voting' && state.retro.confidential_votes
   useEffect(() => {
