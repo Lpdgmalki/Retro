@@ -166,6 +166,13 @@ try {
   await alice.getByText('Rétrospectives récentes').waitFor(T)
   await alice.screenshot({ path: `${SHOTS}/11-accueil.png`, fullPage: true })
 
+  step('Nettoyage : suppression de la rétrospective de test')
+  await alice.getByRole('link', { name: 'Sprint 12' }).first().click()
+  await alice.getByRole('button', { name: 'Paramètres' }).click()
+  await alice.getByRole('button', { name: /Supprimer la rétrospective/ }).click()
+  await alice.getByRole('button', { name: 'Supprimer', exact: true }).click()
+  await alice.waitForURL(APP + '/', T)
+
   const relevant = errors.filter((e) => !/favicon|WebSocket|Download/i.test(e))
   if (relevant.length) {
     console.log('\nErreurs navigateur :\n' + relevant.join('\n'))
