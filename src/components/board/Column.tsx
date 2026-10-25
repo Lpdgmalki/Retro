@@ -33,21 +33,23 @@ export function Column({
 
   return (
     <section
-      className={cx('flex min-h-0 flex-col rounded-2xl border bg-slate-50/70', category.border, className)}
+      className={cx('card-premium relative isolate flex min-h-0 flex-col rounded-[28px] border border-slate-200', className)}
       aria-labelledby={`col-${category.id}`}
     >
-      <header className={cx('rounded-t-2xl border-b px-4 pt-3.5 pb-3', category.border, category.soft)}>
-        <div className="flex items-center justify-between gap-2">
-          <h2 id={`col-${category.id}`} className={cx('flex items-center gap-2 text-sm font-semibold', category.text)}>
-            <Icon className="size-4" />
-            {category.label}
-            <span className="rounded-full bg-surface/80 px-1.5 text-xs font-medium tabular-nums text-slate-500">{totalInCategory}</span>
-          </h2>
+      {/* Halo dégradé dans le coin, aux couleurs de la catégorie */}
+      <span className="pointer-events-none absolute inset-0 -z-10 overflow-hidden rounded-[28px]" aria-hidden>
+        <span className={cx('absolute -top-20 -right-20 size-60 rounded-full opacity-25 blur-3xl', category.dot)} />
+      </span>
+      <header className="relative px-6 pt-6 pb-4">
+        <div className="flex items-start justify-between gap-3">
+          <span className={cx('flex size-12 items-center justify-center rounded-2xl', category.soft, category.text)}>
+            <Icon className="size-6" />
+          </span>
           {board.canContribute && !adding && (
             <Button
-              variant="ghost"
-              size="icon-sm"
-              className={cx('hover:bg-surface', category.text)}
+              variant="secondary"
+              size="icon"
+              className={cx('rounded-xl', category.text)}
               onClick={() => setAdding(true)}
               aria-label={`Ajouter dans ${category.label}`}
             >
@@ -55,10 +57,16 @@ export function Column({
             </Button>
           )}
         </div>
-        <p className="mt-0.5 text-xs text-slate-500">{category.question}</p>
+        <h2 id={`col-${category.id}`} className="mt-5 flex items-center gap-2.5 text-xl font-bold tracking-[-0.03em] text-slate-900">
+          {category.label}
+          <span className={cx('rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums tracking-normal', category.soft, category.text)}>
+            {totalInCategory}
+          </span>
+        </h2>
+        <p className="mt-1 text-[15px] text-slate-500">{category.question}</p>
       </header>
 
-      <div className="flex flex-1 flex-col gap-2.5 p-2.5">
+      <div className="relative flex flex-1 flex-col gap-3 px-4 pb-4">
         {adding && (
           <CardForm
             category={category}
@@ -88,7 +96,7 @@ export function Column({
         ))}
 
         {cards.length === 0 && !adding && (
-          <div className="flex flex-1 flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 px-4 py-8 text-center">
+          <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-surface/60 px-4 py-8 text-center">
             <p className="text-xs text-slate-400">
               {totalInCategory > 0 ? 'Aucune carte ne correspond aux filtres.' : 'Aucune carte pour le moment.'}
             </p>
@@ -104,7 +112,7 @@ export function Column({
           <button
             type="button"
             onClick={() => setAdding(true)}
-            className="flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-slate-200 py-2 text-xs font-medium text-slate-500 transition hover:border-slate-300 hover:bg-surface hover:text-slate-700"
+            className="flex items-center justify-center gap-1.5 rounded-2xl border border-dashed border-slate-200 bg-surface/60 py-2.5 text-sm font-semibold text-slate-500 transition hover:border-slate-300 hover:bg-surface hover:text-slate-800"
           >
             <Plus className="size-3.5" /> Ajouter une carte
           </button>

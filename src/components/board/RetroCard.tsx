@@ -77,12 +77,14 @@ function RetroCardInner({ board, card, rank, onOpen, onConvert }: Props) {
   return (
     <article
       className={cx(
-        'group animate-card-in relative rounded-xl border bg-surface p-3.5 shadow-sm transition hover:shadow-md',
+        'group animate-card-in relative isolate rounded-2xl border bg-surface p-4 shadow-[0_1px_2px_rgb(10_10_12/0.04),0_10px_28px_-18px_rgb(10_10_12/0.22)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_2px_4px_rgb(10_10_12/0.05),0_18px_40px_-20px_rgb(10_10_12/0.3)]',
         rank !== null && rank < 3 ? 'border-indigo-200 ring-1 ring-indigo-100' : 'border-slate-200',
       )}
       aria-label={card.title}
     >
-      <span className={cx('absolute top-3 bottom-3 left-0 w-[3px] rounded-r-full', cat.accentBar)} aria-hidden />
+      <span className="pointer-events-none absolute inset-0 -z-10 overflow-hidden rounded-2xl" aria-hidden>
+        <span className={cx('absolute -top-14 -right-14 size-36 rounded-full opacity-20 blur-2xl transition-opacity duration-300 group-hover:opacity-35', cat.dot)} />
+      </span>
       <div className="flex items-start gap-2">
         <button
           type="button"
@@ -94,11 +96,11 @@ function RetroCardInner({ board, card, rank, onOpen, onConvert }: Props) {
               <Award className="size-3" /> Priorité #{rank + 1}
             </Badge>
           )}
-          <h3 className="text-[14px] leading-snug font-semibold break-words text-slate-900 group-hover:text-indigo-700">
+          <h3 className="relative text-[15px] leading-snug font-bold tracking-[-0.015em] break-words text-slate-900 group-hover:text-indigo-700">
             {card.title}
           </h3>
           {card.description && (
-            <p className="mt-1 line-clamp-3 text-[13px] leading-relaxed break-words whitespace-pre-line text-slate-600">
+            <p className="relative mt-1.5 line-clamp-3 text-[13.5px] leading-relaxed break-words whitespace-pre-line text-slate-500">
               {card.description}
             </p>
           )}

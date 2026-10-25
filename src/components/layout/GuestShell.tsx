@@ -27,7 +27,7 @@ export function GuestShell() {
 
   return (
     <div className={cx('flex min-h-screen flex-col', isHome && 'theme-light')}>
-      <header className={cx('sticky top-0 z-30 bg-surface/85 backdrop-blur print:hidden', isHome ? 'border-b border-transparent' : 'border-b border-slate-200/80')}>
+      <header className={cx('sticky top-0 z-30 bg-surface/95 backdrop-blur-xl print:hidden', isHome ? 'border-b border-transparent' : 'border-b border-slate-200/80')}>
         <div className={cx('mx-auto flex max-w-[1600px] items-center gap-3 px-4 sm:px-6 lg:px-8', isHome ? 'h-20' : 'h-14')}>
           <Link to="/" className="flex items-center gap-2 font-semibold text-slate-900">
             <BrandMark />

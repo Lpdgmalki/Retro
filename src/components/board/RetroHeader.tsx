@@ -48,7 +48,7 @@ export function RetroHeader({
           )}
         </nav>
         <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
-          <h1 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">{retro.sprint_name}</h1>
+          <h1 className="text-3xl font-bold tracking-[-0.04em] text-slate-900 sm:text-4xl">{retro.sprint_name}</h1>
           <Badge className={STATUS_BADGE[retro.status]}>{STATUS_LABEL[retro.status]}</Badge>
           <span
             className={cx('inline-flex items-center gap-1 text-xs', board.connection === 'live' ? 'text-emerald-600' : 'text-slate-400')}
